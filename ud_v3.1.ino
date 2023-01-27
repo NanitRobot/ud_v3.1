@@ -213,7 +213,7 @@ void setup()
 {
   Nanit_Base_Start();
   delay(2000);
-  NanitDisplay.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
+  // NanitDisplay.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
   Serial.begin(9600);
   Serial3.begin(9600);
 
@@ -272,7 +272,7 @@ void loop()
     {
       buz_pilik(2, 300);
       tm.setSegments(seg_bloc, 4, 0);
-      NanitDisplay.fillScreen(ST7735_RED);
+      // NanitDisplay.fillScreen(ST7735_RED);
       motor_rotate(0);
       window(CLOSE);
       stepper_pos(DOWN);
@@ -287,7 +287,7 @@ void loop()
     if (lock_change)
     {
       lock_change = 0;
-      NanitDisplay.fillScreen(ST7735_WHITE);
+      // NanitDisplay.fillScreen(ST7735_WHITE);
     }
     
     //ПАНЕЛИ F, G (микрофон отдельно)
@@ -592,32 +592,32 @@ void port_6_info()
   humidity = dht.readHumidity();
 
   
-  NanitDisplay.setTextWrap(true);
-  NanitDisplay.setRotation(1);
-  NanitDisplay.setTextSize(2);
+  tft.setTextWrap(true);
+  tft.setRotation(1);
+  tft.setTextSize(2);
 
-  NanitDisplay.setCursor(10, 10);
-  NanitDisplay.fillRect(55, 5, 60, 25, ST7735_WHITE);
-  NanitDisplay.print("CO2: ");
-  NanitDisplay.print(gas_level);
-  NanitDisplay.println(" ppm");
+  tft.setCursor(10, 10);
+  tft.fillRect(55, 5, 60, 25, ST7735_WHITE);
+  tft.print("CO2: ");
+  tft.print(gas_level);
+  tft.println(" ppm");
 
-  NanitDisplay.setCursor(10, 40);
-  NanitDisplay.fillRect(75, 35, 75, 25, ST7735_WHITE);
-  NanitDisplay.print("light: ");
-  NanitDisplay.println(light_level);
+  tft.setCursor(10, 40);
+  tft.fillRect(75, 35, 75, 25, ST7735_WHITE);
+  tft.print("light: ");
+  tft.println(light_level);
   
-  NanitDisplay.setCursor(10, 70);
-  NanitDisplay.fillRect(70, 65, 85, 25, ST7735_WHITE);
-  NanitDisplay.print("temp: ");
-  NanitDisplay.print(temperature);
-  NanitDisplay.println(" C");
+  tft.setCursor(10, 70);
+  tft.fillRect(70, 65, 85, 25, ST7735_WHITE);
+  tft.print("temp: ");
+  tft.print(temperature);
+  tft.println(" C");
 
-  NanitDisplay.setCursor(10, 100);
-  NanitDisplay.fillRect(60, 95, 90, 25, ST7735_WHITE);
-  NanitDisplay.print("hum: ");
-  NanitDisplay.print(humidity);
-  NanitDisplay.println(" %");
+  tft.setCursor(10, 100);
+  tft.fillRect(60, 95, 90, 25, ST7735_WHITE);
+  tft.print("hum: ");
+  tft.print(humidity);
+  tft.println(" %");
 }
 
 int range_cm()
@@ -664,10 +664,10 @@ void print_bat()
   else if (bat_volt > 4.0 && bat_volt <= 4.1) bat_perc = 90;
   else if (bat_volt > 4.1) bat_perc = 100;
   
-//  NanitDisplay.setTextSize(1);
-  NanitDisplay.setCursor(0, 14);        
-  NanitDisplay.print(bat_volt); 
-  NanitDisplay.print('V');
+ tft.setTextSize(1);
+  tft.setCursor(0, 14);        
+  tft.print(bat_volt); 
+  tft.print('V');
 
     /*
     NanitDisplay.setCursor(120, 14);
