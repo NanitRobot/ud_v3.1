@@ -70,10 +70,12 @@
 //MOTOR1_A это уже готовый дефайн P1_3 
 //MOTOR1_B это уже готовый дефайн P1_4
 
-#define IN1       P2_1
-#define IN2       P2_2
-#define IN3       P2_3
-#define IN4       P2_4
+
+#define IN1       P2_4
+#define IN2       P2_3
+#define IN3       P2_2
+#define IN4       P2_1
+
 
 #define TL_RED    P3_2
 #define TL_YELLOW P3_3
@@ -212,8 +214,8 @@ void print_bat();
 void setup() 
 {
   Nanit_Base_Start();
-  delay(2000);
-  // NanitDisplay.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
+  delay(7000);
+  tft.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
   Serial.begin(9600);
   Serial3.begin(9600);
 
@@ -272,7 +274,7 @@ void loop()
     {
       buz_pilik(2, 300);
       tm.setSegments(seg_bloc, 4, 0);
-      // NanitDisplay.fillScreen(ST7735_RED);
+      tft.fillScreen(ST7735_RED);
       motor_rotate(0);
       window(CLOSE);
       stepper_pos(DOWN);
@@ -287,14 +289,14 @@ void loop()
     if (lock_change)
     {
       lock_change = 0;
-      // NanitDisplay.fillScreen(ST7735_WHITE);
+      tft.fillScreen(ST7735_WHITE);
     }
     
     //ПАНЕЛИ F, G (микрофон отдельно)
     port_6_info();
     
    //ПАНЕЛЬ Е   
-    if (gas_level > 130 || manual_motor) motor_rotate(1);
+    if (gas_level > 250 || manual_motor) motor_rotate(1);
     else motor_rotate(0);
 
     //ПАНЕЛЬ D
@@ -327,14 +329,14 @@ void loop()
      if (analogRead(LIGHT_PIN) <= 250){if(!digitalRead(LINE_PIN)){window(CLOSE);} else {window(OPENED);} }
      else window(CLOSE);
     }
-    Serial.println();
+    /*Serial.println();
     Serial.print("/b=");
     Serial.print(manual_window);
     Serial.print("/s=");
     Serial.print(analogRead(LIGHT_PIN));
         Serial.print("/l=");
     Serial.println(digitalRead(LINE_PIN));
-    delay(1000);
+    delay(1000);*/
     
   }/****КОНЕЦ УСЛОВИЯ "ЕСЛИ НЕ ЛОКДАУН"******/
 
@@ -419,7 +421,7 @@ void port_9_init()
 
 void window(servo_pos which)
 {
-  if (which == OPENED)servo.write(180);  ///Серво відкривається
+  if (which == OPENED)servo.write(100);  ///Серво відкривається
   else if (which == CLOSE)servo.write(0); ///Серво закривається
 }
 
@@ -664,14 +666,14 @@ void print_bat()
   else if (bat_volt > 4.0 && bat_volt <= 4.1) bat_perc = 90;
   else if (bat_volt > 4.1) bat_perc = 100;
   
- tft.setTextSize(1);
+  tft.setTextSize(1);
   tft.setCursor(0, 14);        
   tft.print(bat_volt); 
   tft.print('V');
 
     /*
-    NanitDisplay.setCursor(120, 14);
-    NanitDisplay.print(bat_perc);
-    NanitDisplay.print('%');
+    tft.setCursor(120, 14);
+    tft.print(bat_perc);
+    tft.print('%');
     */
 }
