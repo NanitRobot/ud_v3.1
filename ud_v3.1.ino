@@ -133,7 +133,7 @@ byte colPins[COLS] = {C1, C2, C3, C4};
 char init_pass[4] = {'2', '3', '0', 'D',};
 char cur_pass[4];
 int count = 0;
-
+int limit_gas=0;
 /*
  * Передаваемая по блютузу комманда с телефона:
  * 
@@ -231,6 +231,7 @@ void setup()
   window(CLOSE);
   rgb_write(0, 0, 0);
   buz_pilik(2, 100); //верещит базер, если не пиликнуть им пару раз
+  limit_gas=analogRead(MQ7_PIN)+20;
 }
 
 
@@ -296,10 +297,13 @@ void loop()
     port_6_info();
     
    //ПАНЕЛЬ Е   
-    if (gas_level > 250 || manual_motor) motor_rotate(1);
+    if (gas_level > limit_gas || manual_motor) motor_rotate(1);
     else motor_rotate(0);
 
     //ПАНЕЛЬ D
+    if (prev_step==DOWN) {traffic_light(RED);} else {traffic_light(GREEN);}
+
+    
     if (range_cm() < 10)
     {
       tm.clear();
@@ -314,7 +318,6 @@ void loop()
     }
 
     //ПАНЕЛЬ С (+микрофон)
-    if (digitalRead(SOUND_PIN))traffic_light((tl_color)random(0, 3));
 
     if (digitalRead(PIR_PIN) && matrix_lock)
     {
@@ -462,6 +465,7 @@ void stepper_pos(step_pos which)
     
     while (millis() - lil_delay < step_total_time)
     {    
+      traffic_light(YELLOW);
       digitalWrite(IN1, HIGH);
       digitalWrite(IN2, LOW);
       digitalWrite(IN3, LOW);
@@ -501,6 +505,7 @@ void stepper_pos(step_pos which)
     
     while (millis() - lil_delay < step_total_time)
     {
+      traffic_light(YELLOW);
       digitalWrite(IN1, LOW);
       digitalWrite(IN2, LOW);
       digitalWrite(IN3, HIGH);
