@@ -330,6 +330,7 @@ void loop()
     //ПАНЕЛЬ D
     if (prev_step==DOWN) {traffic_light(RED);} else {traffic_light(GREEN);}
 
+
     if(time_US<millis()){
     time_US=millis()+200;
     if (range_cm() < 10)
@@ -348,6 +349,7 @@ void loop()
       stepper_pos(DOWN);
       }
     }
+
     }
 
     //ПАНЕЛЬ В (+фоторезистор)
