@@ -1,0 +1,3 @@
+[submodule "build/Nanit.avr.nanit_discovery"]
+	path = build/Nanit.avr.nanit_discovery
+	url = git@github.com:NanitRobot/hex.git
