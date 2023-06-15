@@ -60,21 +60,20 @@
 
 #include <NanitLib.h>
 
-#include <DHT.h> //https://github.com/adafruit/DHT-sensor-library
+#include <DHT.h>
 #include <Servo.h>
-#include <TM1637Display.h> //https://github.com/avishorp/TM1637
-#include <Keypad.h> //http://playground.arduino.cc/Code/Keypad
+#include <TM1637Display.h>
+#include <Keypad.h>
+#include <EEPROM.h>
 
 #define SERVO_PIN P1_1 
 //MOTOR1_A это уже готовый дефайн P1_3 
 //MOTOR1_B это уже готовый дефайн P1_4
 
-
-#define IN1       P2_4
-#define IN2       P2_3
-#define IN3       P2_2
-#define IN4       P2_1
-
+#define IN1       P2_1
+#define IN2       P2_2
+#define IN3       P2_3
+#define IN4       P2_4
 
 #define TL_RED    P3_2
 #define TL_YELLOW P3_3
@@ -93,12 +92,23 @@
 #define MQ7_PIN   P6_2
 #define LIGHT_PIN P6_3
 
+#define R1        P10_4
+#define R2        P10_3
+#define R3        P10_2
+#define R4        P10_1
+
+#define C1        P7_4
+#define C2        P7_3
+#define C3        P7_2
+#define C4        P7_1
+
 #define TRIG_PIN  P9_3
 #define ECHO_PIN  P9_4 
 #define CLK       P9_1
 #define DIO       P9_2
 
-#define V_BAT     A15 //напруга АКБ
+#define V_BAT     A15 //служебный дефайн, если будет надо глянуть батарею
+
 typedef enum{RED, YELLOW, GREEN}tl_color;                 // для светофорных светодиодов
 typedef enum{UP, DOWN}step_pos;                           // для шаговика
 typedef enum{OPENED, CLOSE}servo_pos;                       // для сервы
@@ -108,34 +118,19 @@ typedef enum{FIRST, SECOND, THIRD, FOURTH}mat_state;      // для матрич
 const byte ROWS = 4;
 const byte COLS = 4;
 
-/*char keys[ROWS][COLS] = { //Підібрати символи щоб не змінювати підключення
+char keys[ROWS][COLS] = {
   {'1', '2', '3', 'A'},
   {'4', '5', '6', 'B'},
   {'7', '8', '9', 'C'},
   {'*', '0', '#', 'D'}
 };
-*/
 
-char keys[ROWS][COLS] = { //Підібрати символи щоб не змінювати підключення
-  {'A', 'B', 'C', 'B'},
-  {'3', '6', '9', '#'},
-  {'2', '5', '8', '0'},
-  {'1', '4', '7', '*'}
-};
-//Порти до яких підєднана клавіатура. Тут потрібно вказати порти як на ардуіно мега (аналогові порти вказувати як цифрові!
-//                           A0  A2
-byte rowPins[ROWS] = {6, 24, 54, 56};
-//                           A4  A3
-byte colPins[COLS] = {9, 28, 58, 57};
+byte rowPins[ROWS] = {R1, R2, R3, R4};
+byte colPins[COLS] = {C1, C2, C3, C4};
 
-char init_pass[4] = {'1', '2', '3', 'A',};
+char init_pass[4] = {'2', '3', '0', 'D',};
 char cur_pass[4];
 int count = 0;
-int limit_gas=0;
-
-unsigned long time_info;
-unsigned long time_US;
-unsigned long time_rrzz;
 
 /*
  * Передаваемая по блютузу комманда с телефона:
@@ -172,7 +167,7 @@ const uint8_t seg_stop[] = {
 };
 
 const uint8_t seg_go[] = {
-  SEG_A | SEG_C | SEG_D | SEG_E | SEG_F,         // G
+  SEG_A | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G,         // G
   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,         // O
 };
 
@@ -217,11 +212,11 @@ void print_bat();
 void setup() 
 {
   Nanit_Base_Start();
-  delay(7000);
-  tft.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
+  delay(2000);
+  NanitDisplay.fillScreen(ST7735_WHITE); //избавляемся от Hello Nanit
   Serial.begin(9600);
   Serial3.begin(9600);
-  Serial.println("*");
+
   port_1_init();   
   port_2_init();  
   port_3_init();  
@@ -234,7 +229,6 @@ void setup()
   window(CLOSE);
   rgb_write(0, 0, 0);
   buz_pilik(2, 100); //верещит базер, если не пиликнуть им пару раз
-  limit_gas=analogRead(MQ7_PIN)+10;
 }
 
 
@@ -243,125 +237,98 @@ void loop()
   key = matrix.getKey();
   if (key)
   {
-    time_rrzz=millis()+2000;
-    if(!lockdown) {lockdown=1; lock_change = 1;}
-    if(key=='*') count = -1;
-    //Serial.println(key);
     cur_pass[count++] = key;
-    buz_pilik(1, 50); //Пілікає якщо натискаємо на кнопку
+    buz_pilik(1, 50);
   }
   if (count == 4)
   {
     count = 0;
     if (0 == strncmp(cur_pass, init_pass, 4))
-    { 
-      buz_pilik(2, 50); // Пілікає коли зняли сигналку
-      matrix_lock = !matrix_lock;
-      lockdown = 0;
-      lock_change = 1;
+    {
+      buz_pilik(2, 50);
+      matrix_lock = (matrix_lock == 0)? 1 : 0;
     }
   }
- 
+  
   if (Serial3.available())phone_but = Serial3.read();
 
   if (phone_but == 'L')
   {
-    lockdown = !lockdown;
+    lockdown = (lockdown == 0)? 1 : 0;
     lock_change = 1;
   }
   else if (phone_but == 'm')
   {
-    manual_motor = !manual_motor;
+    manual_motor = (manual_motor == 0)? 1 : 0;
   }
   else if (phone_but == 'w')
   {
-    manual_window = !manual_window;
+    manual_window = (manual_window == 0)? 1 : 0;
   }
 
   if (lockdown)
   {
     if (lock_change)
     {
-      buz_pilik(2, 300); ///Пілікає коли поставили сигналку
+      buz_pilik(2, 300);
       tm.setSegments(seg_bloc, 4, 0);
-      tft.fillScreen(ST7735_RED);
+      NanitDisplay.fillScreen(ST7735_RED);
       motor_rotate(0);
       window(CLOSE);
       stepper_pos(DOWN);
-      rgb_write(0, 0, 255);
+      rgb_write(255, 0, 0);
       
       lock_change = 0;
-    }  
-
-    //// Виконується коли будиночок на охороні
-    byte rr = digitalRead(PIR_PIN);
-     byte zz = digitalRead(SOUND_PIN);
-     if ((rr || zz) && (time_rrzz<millis()))
-    {
-      Serial.print(rr);
-      Serial.println(zz);
-      rgb_write(255, 0, 0);
-      buz_pilik(3, 100); 
     }
-    else rgb_write(0, 0, 255);
-
-
-
     
   }
   else
-  { /////Якщо не на сигналці
-    
+  {
     if (lock_change)
     {
       lock_change = 0;
-      tft.fillScreen(ST7735_WHITE);
-      rgb_write(0, 255, 0);
+      NanitDisplay.fillScreen(ST7735_WHITE);
     }
     
     //ПАНЕЛИ F, G (микрофон отдельно)
-  if (time_info<millis()) {    port_6_info();  time_info+=10000;}
+    port_6_info();
     
-   //ПАНЕЛЬ Е   ///////////////////////////////////////////////////////////////////////////////
-    gas_level = analogRead(MQ7_PIN);
-    if (gas_level > limit_gas || manual_motor) motor_rotate(1);
+   //ПАНЕЛЬ Е   
+    if (gas_level > 130 || manual_motor) motor_rotate(1);
     else motor_rotate(0);
 
     //ПАНЕЛЬ D
-    if (prev_step==DOWN) {traffic_light(RED);} else {traffic_light(GREEN);}
-
-
-    if(time_US<millis()){
-    time_US=millis()+200;
     if (range_cm() < 10)
     {
-      if (prev_step == DOWN){
       tm.clear();
       tm.setSegments(seg_go, 2, 0);
       stepper_pos(UP);
-      }
     }
     else
     {
-      if (prev_step == UP){
       tm.clear();
       tm.setSegments(seg_stop, 4, 0);
       stepper_pos(DOWN);
-      }
     }
 
+    //ПАНЕЛЬ С (+микрофон)
+    if (digitalRead(SOUND_PIN))traffic_light((tl_color)random(0, 3));
+
+    if (digitalRead(PIR_PIN) && matrix_lock)
+    {
+      rgb_write(255, 0, 0);
+      buz_pilik(3, 100); 
     }
+    else rgb_write(0, 255, 0);
 
     //ПАНЕЛЬ В (+фоторезистор)
-    if(manual_window){window(CLOSE);}  ///////////////////////////////////////////////Фоторезистор і вікно
-    else {
-     if (analogRead(LIGHT_PIN) <= 250){if(!digitalRead(LINE_PIN)){window(CLOSE);} else {window(OPENED);} }
+     if (analogRead(LIGHT_PIN) <= 250 && manual_window) window(OPENED);
      else window(CLOSE);
-    }
+
     
-  } /****КОНЕЦ УСЛОВИЯ "ЕСЛИ НЕ ЛОКДАУН"******/
+  }/****КОНЕЦ УСЛОВИЯ "ЕСЛИ НЕ ЛОКДАУН"******/
 
-
+  
   phone_but = 'x';
 }/***КОНЕЦ LOOP****/
 
@@ -442,8 +409,8 @@ void port_9_init()
 
 void window(servo_pos which)
 {
-  if (which == OPENED)servo.write(100);  ///Серво відкривається
-  else if (which == CLOSE)servo.write(0); ///Серво закривається
+  if (which == OPENED)servo.write(180);
+  else if (which == CLOSE)servo.write(0);
 }
 
 void motor_rotate(boolean mspeed)
@@ -451,10 +418,12 @@ void motor_rotate(boolean mspeed)
   if (mspeed == 1)
   {
      digitalWrite(MOTOR1_A, HIGH);
+     digitalWrite(MOTOR1_B, LOW);
   }
   else if (mspeed == 0)
   {
     digitalWrite(MOTOR1_A, LOW);
+    digitalWrite(MOTOR1_B, LOW);
   }
 
 }
@@ -481,7 +450,6 @@ void stepper_pos(step_pos which)
     
     while (millis() - lil_delay < step_total_time)
     {    
-      traffic_light(YELLOW);
       digitalWrite(IN1, HIGH);
       digitalWrite(IN2, LOW);
       digitalWrite(IN3, LOW);
@@ -521,7 +489,6 @@ void stepper_pos(step_pos which)
     
     while (millis() - lil_delay < step_total_time)
     {
-      traffic_light(YELLOW);
       digitalWrite(IN1, LOW);
       digitalWrite(IN2, LOW);
       digitalWrite(IN3, HIGH);
@@ -609,37 +576,38 @@ void buz_pilik(byte times, int duration)
 
 void port_6_info()
 {
-  float bat_level = (map(analogRead(A15),0,1024,0,500))/100.f;
+  gas_level = analogRead(MQ7_PIN);
+  light_level = analogRead(LIGHT_PIN);
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
 
   
-  tft.setTextWrap(true);
-  tft.setRotation(1);
-  tft.setTextSize(2);
+  NanitDisplay.setTextWrap(true);
+  NanitDisplay.setRotation(1);
+  NanitDisplay.setTextSize(2);
 
-  tft.setCursor(10, 10);
-  tft.fillRect(55, 5, 60, 25, ST7735_WHITE);
-  tft.print("CO2: ");
-  tft.print(gas_level);
-  tft.println(" ppm");
+  NanitDisplay.setCursor(10, 10);
+  NanitDisplay.fillRect(55, 5, 60, 25, ST7735_WHITE);
+  NanitDisplay.print("CO2: ");
+  NanitDisplay.print(gas_level);
+  NanitDisplay.println(" ppm");
 
-  tft.setCursor(10, 40);
-  tft.fillRect(75, 35, 75, 25, ST7735_WHITE);
-  tft.print("Bat: ");
-  tft.println(bat_level);
+  NanitDisplay.setCursor(10, 40);
+  NanitDisplay.fillRect(75, 35, 75, 25, ST7735_WHITE);
+  NanitDisplay.print("light: ");
+  NanitDisplay.println(light_level);
   
-  tft.setCursor(10, 70);
-  tft.fillRect(70, 65, 85, 25, ST7735_WHITE);
-  tft.print("temp: ");
-  tft.print(temperature);
-  tft.println(" C");
+  NanitDisplay.setCursor(10, 70);
+  NanitDisplay.fillRect(70, 65, 85, 25, ST7735_WHITE);
+  NanitDisplay.print("temp: ");
+  NanitDisplay.print(temperature);
+  NanitDisplay.println(" C");
 
-  tft.setCursor(10, 100);
-  tft.fillRect(60, 95, 90, 25, ST7735_WHITE);
-  tft.print("hum: ");
-  tft.print(humidity);
-  tft.println(" %");
+  NanitDisplay.setCursor(10, 100);
+  NanitDisplay.fillRect(60, 95, 90, 25, ST7735_WHITE);
+  NanitDisplay.print("hum: ");
+  NanitDisplay.print(humidity);
+  NanitDisplay.println(" %");
 }
 
 int range_cm()
@@ -686,14 +654,14 @@ void print_bat()
   else if (bat_volt > 4.0 && bat_volt <= 4.1) bat_perc = 90;
   else if (bat_volt > 4.1) bat_perc = 100;
   
-  tft.setTextSize(1);
-  tft.setCursor(0, 14);        
-  tft.print(bat_volt); 
-  tft.print('V');
+  NanitDisplay.setTextSize(1);
+  NanitDisplay.setCursor(0, 14);        
+  NanitDisplay.print(bat_volt); 
+  NanitDisplay.print('V');
 
     /*
-    tft.setCursor(120, 14);
-    tft.print(bat_perc);
-    tft.print('%');
+    NanitDisplay.setCursor(120, 14);
+    NanitDisplay.print(bat_perc);
+    NanitDisplay.print('%');
     */
 }
