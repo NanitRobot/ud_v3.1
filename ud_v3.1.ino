@@ -1,74 +1,11 @@
- /*
-  * УД нанит, версия 3.1.
-  * Рассчитана на 10 адаптеров.
-  * Используется матричная клавиатура
-  * и светофорные светодиоды.
-  * 
-  * 
-  * PS: в это тестовая версия УД на 10 портов,
-  * создана в демонстративных целях,
-  * на матричной клавиатуре работают только кнопки
-  * '2', '3', '0', 'D' - остальные молчат 
-  * (проверил несколько клавиатур).
-  * Возможно проблема в самих переходниках,
-  * поэтому пока буду использовать пароль 230D + #
-  * для блокировки/расблокировки секции охраны.
-  */
- 
-
- 
- /*
-  
-  **********ЧТО ГДЕ РАЗМЕСТИТСЯ**********
-  
- * на первом гнезде расположится серва и мотор постоянного тока, так как
- * на нем есть драйвер + питание на гнезде идет от батареи, так что
- * можно цеплять мощную нагрузку.
- 
- * 2-е гнездо займет физический драйвер ULN2003 для шаговика,
- * там питание идет от батареи -> можно цеплять мощную нагрузку 
- 
- * на третьем гнезде не используется пин P3_1, 
- * остальные можно под три отдельных 
- * светофорных светодиода
- 
- * на 4-м гнезде есть три ШИМ-пина - как раз под RGB-светодиод
-
- * на 5-м гнезде будут располагаться базер, датчик звука,
- * датчик линии и инфракрасный датчик движения.
- * Есть 1 порт-прерывание - возможно отдам его PIRу.
-
- * на 6-м порту будут располагаться информационные датчики:
- * температура-влажность, свет, уровень угарного газа.
- * Информация будет выводится на дисплей нанита
- 
- * 7-й и 10-й порт --- матричная клавиатура.
-
- * 8 порт не буду трогать - там серийный монитор,
- * неразведенный сброс. Что мне один оставшийся 
- * нещасный аналоговый пин?
-
- * на 9-м гнезде есть шина I2C - нету правда I2C-устройств, 
- * так что оно полностью пойдёт под ультрасоник и семисегментник
-  
- * на 11-м гнезде есть UART3, буду общаться с блютуз-модулем через него
-  
- * 12-й порт не используется
- 
- */
-
-
 #include <NanitLib.h>
-
-#include <DHT.h> //https://github.com/adafruit/DHT-sensor-library
-#include <Servo.h>
-#include <TM1637Display.h> //https://github.com/avishorp/TM1637
-#include <Keypad.h>  //http://playground.arduino.cc/Code/Keypad
-#include <EEPROM.h>
+#include <DHT.h> 
+#include <TM1637Display.h>
+#include <Keypad.h>  
 
 #define SERVO_PIN P1_1 
-//MOTOR1_A это уже готовый дефайн P1_3 
-//MOTOR1_B это уже готовый дефайн P1_4
+//MOTOR1_A вже готовий дефайн P1_3 
+//MOTOR1_B вже готовий дефайн P1_4
 
 #define IN1       P2_1
 #define IN2       P2_2
@@ -92,15 +29,15 @@
 #define MQ7_PIN   P6_2
 #define LIGHT_PIN P6_3
 
-#define R1        P10_4
-#define R2        P10_3
-#define R3        P10_2
-#define R4        P10_1
+#define C4        P10_4
+#define C3        P10_3
+#define C2        P10_2
+#define C1        P10_1
 
-#define C1        P7_4
-#define C2        P7_3
-#define C3        P7_2
-#define C4        P7_1
+#define R1        P7_4
+#define R2        P7_3
+#define R3        P7_2
+#define R4        P7_1
 
 #define TRIG_PIN  P9_3
 #define ECHO_PIN  P9_4 
@@ -108,6 +45,9 @@
 #define DIO       P9_2
 
 #define V_BAT     A15 //служебный дефайн, если будет надо глянуть батарею
+
+#define wifi_esp 1      //Якщо в розумному будинку використовується WiFi то має бути розкоментовано якщо ні - закоментуйте
+// #define bluetooth 1  //Якщо в розумному будинку використовується BlTh то має бути розкоментовано якщо ні - закоментуйте
 
 typedef enum{RED, YELLOW, GREEN}tl_color;                 // для светофорных светодиодов
 typedef enum{UP, DOWN}step_pos;                           // для шаговика
@@ -128,10 +68,11 @@ char keys[ROWS][COLS] = {
 byte rowPins[ROWS] = {R1, R2, R3, R4};
 byte colPins[COLS] = {C1, C2, C3, C4};
 
-char init_pass[4] = {'2', '3', '0', 'D',};
+char init_pass[4] = {'1','2','3','D'};
 char cur_pass[4];
 int count = 0;
 
+#ifdef bluetooth
 /*
  * Передаваемая по блютузу комманда с телефона:
  * 
@@ -139,18 +80,23 @@ int count = 0;
  * 'm' - включить/выключить мотор
  * 'w' - открыть/закрыть окно
  */
-char phone_but = 'x'; 
-bool lockdown = 0;    //режим блокировки дома
-bool lock_change = 0; 
-bool manual_motor = 0;
-bool manual_window = 0;
-bool matrix_lock = 0;
-int gas_level = 0;
-int light_level = 0;
-int temperature = 0;
-int humidity = 0;
-char key = 0;           //кнопка матрицы
-step_pos prev_step = DOWN;   //для того, чтобы шаговик дважды не поднимался/опускался
+char phone_but = 'x';
+#endif
+
+char key = 0;         //кнопка матриці
+
+bool lockdown = 0,    //режим блокировки дома
+     lock_change = 0, 
+     manual_motor = 0,
+     manual_window = 0,
+     matrix_lock = 0;
+
+int gas_level = 0,
+    light_level = 0,
+    temperature = 0,
+    humidity = 0;
+           
+step_pos prev_step;   //для того, чтобы шаговик дважды не поднимался/опускался
 
 const uint8_t seg_bloc[] = {
   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G, // B
@@ -176,7 +122,7 @@ DHT dht(DHT11_PIN, DHT11);
 TM1637Display tm = TM1637Display(CLK, DIO);
 Keypad matrix = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-/*******инициализаторы гнёзд нанита***********/
+/*******ініціалізатори портів наніта***********/
 void port_1_init();
 void port_2_init();
 void port_3_init();
@@ -238,6 +184,7 @@ void loop()
   if (key)
   {
     cur_pass[count++] = key;
+    Serial.println(key);
     buz_pilik(1, 50);
   }
   if (count == 4)
@@ -249,8 +196,10 @@ void loop()
       matrix_lock = (matrix_lock == 0)? 1 : 0;
     }
   }
+  #ifdef bluetooth
+  if (Serial3.available())
   
-  if (Serial3.available())phone_but = Serial3.read();
+  phone_but = Serial3.read();
 
   if (phone_but == 'L')
   {
@@ -265,7 +214,7 @@ void loop()
   {
     manual_window = (manual_window == 0)? 1 : 0;
   }
-
+#endif
   if (lockdown)
   {
     if (lock_change)
@@ -294,7 +243,7 @@ void loop()
     port_6_info();
     
    //ПАНЕЛЬ Е   
-    if (gas_level > 130 || manual_motor) motor_rotate(1);
+    if (gas_level > 140 || manual_motor) motor_rotate(1);
     else motor_rotate(0);
 
     //ПАНЕЛЬ D
@@ -302,13 +251,13 @@ void loop()
     {
       tm.clear();
       tm.setSegments(seg_go, 2, 0);
-      stepper_pos(UP);
+      stepper_pos(DOWN);
     }
     else
     {
       tm.clear();
       tm.setSegments(seg_stop, 4, 0);
-      stepper_pos(DOWN);
+      stepper_pos(UP);
     }
 
     //ПАНЕЛЬ С (+микрофон)
@@ -328,8 +277,9 @@ void loop()
     
   }/****КОНЕЦ УСЛОВИЯ "ЕСЛИ НЕ ЛОКДАУН"******/
 
-  
+  #ifdef bluetooth
   phone_but = 'x';
+  #endif
 }/***КОНЕЦ LOOP****/
 
 
