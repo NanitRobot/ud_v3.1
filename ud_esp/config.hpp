@@ -1,5 +1,6 @@
 #include <NanitLib.h>
 #include <DHT.h> 
+#include <TinyStepper.h>
 #include <TM1637Display.h>
 #include <Keypad.h>  
 #include <Password.h>
@@ -13,9 +14,19 @@
 #define IN3       P2_3
 #define IN4       P2_4
 
+// #define rgb_led3 1
+#define separate_leds3 1
+
+
+#ifdef separate_leds3
 #define TL_RED    P3_2
 #define TL_YELLOW P3_3
 #define TL_GREEN  P3_4
+#elif rgb_led3
+#define RGB_RDL P3_2
+#define RGB_GRN P3_3
+#define RGB_BLU P3_4
+#endif
 
 #define RGB_RED   P4_2
 #define RGB_GREEN P4_3
@@ -26,9 +37,14 @@
 #define BUZ_PIN   P5_3
 #define LINE_PIN  P5_4
 
+#define active_buz 1
+// #define pasive_buz 1
+
 #define DHT11_PIN P6_1
 #define MQ7_PIN   P6_2
 #define LIGHT_PIN P6_3
+
+// #define LIGHT_4pin 1
 
 #define C4        P10_4
 #define C3        P10_3
@@ -48,6 +64,8 @@
 #define wifi_esp 1      //Якщо в розумному будинку використовується WiFi то має бути розкоментовано якщо ні - закоментуйте
 // #define bluetooth 1  //Якщо в розумному будинку використовується BlTh то має бути розкоментовано якщо ні - закоментуйте
 
+#define HALFSTEPS 4096 // Кількість півкроків для повного оберту (Number of half-steps for a full rotation)
+
 void port_1_init();
 void port_2_init();
 void port_3_init();
@@ -55,4 +73,9 @@ void port_4_init();
 void port_5_init();
 void port_6_init(); 
 void port_9_init();
+
+
+
+
+void setPassword(char* pass);
 
