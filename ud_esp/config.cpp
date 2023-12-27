@@ -8,10 +8,10 @@ TM1637Display tm(CLK, DIO);
 const byte step_pin[4]{IN1,IN2,IN3,IN4};
 
 bool
-  parkin_flag = 0;
+  parkin_flag = 0,
+  light = 0 ;
 
 int
-  background_screen = 0,
   prev_gas = 0,
 #ifdef LIGHT_4pin
   prev_ldr = 0,
@@ -28,6 +28,7 @@ float
 #ifdef LIGHT_4pin
 uint16_t light_start = 0;
 #endif
+uint16_t  background_screen = 0;
 
 const uint8_t word_stop[] ={
   SEG_A | SEG_C | SEG_D | SEG_F | SEG_G,            // S
@@ -106,6 +107,7 @@ void port_6_init(void) {
 #ifdef LIGHT_4pin
   light_start = analogRead(LIGHT_PIN);
 #endif
+  light = digitalRead(LIGHT_PIN);
 }
 
 void port_9_init(void) {
@@ -118,7 +120,7 @@ void port_9_init(void) {
 
 void initdisplay(void) {
   Nanit_Base_Start();
-  if (digitalRead(LIGHT_PIN)) {
+  if (light) {
     background_screen = ST7735_BLACK;
     tft.setTextColor(ST7735_WHITE);
   } else {
@@ -148,7 +150,7 @@ void displaySensors(void) {
   last_tmp = dht.readTemperature();
   tft.print("Temp:");
   tft.print(prev_tmp);
-  tft.drawCircle(139, 51, 2, ST7735_WHITE);  // print degree symbol ( ° )
+  tft.drawCircle(139, 51, 2, ~background_screen);  // print degree symbol ( ° )
   tft.print(" C");
   tft.setCursor(10, 70);
   last_hum = dht.readHumidity();
@@ -175,17 +177,12 @@ void displaySensors(void) {
     tft.fillRect(70, 70, 70, 15, background_screen);
     prev_hum = last_hum;
   }
-    if (digitalRead(LIGHT_PIN)) {
-    background_screen =!background_screen;
-    delay(10);
-    tft.setTextColor(!background_screen);
+  if (digitalRead(LIGHT_PIN) != light) {
+    light = digitalRead(LIGHT_PIN);
+    background_screen =~ background_screen;
+    tft.setTextColor(~background_screen);
     tft.fillScreen(background_screen);
   } 
-  else 
-  {
-    background_screen = ST7735_WHITE;
-    tft.setTextColor(ST7735_BLACK);
-  }
 }
 
 void C_O_filter(void) {
