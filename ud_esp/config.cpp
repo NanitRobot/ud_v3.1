@@ -51,6 +51,13 @@ const uint8_t word_open[] ={
   SEG_C | SEG_E | SEG_G,                            // n
 };
 
+const uint8_t seg_bloc[] = {
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G, // B
+  SEG_E | SEG_D | SEG_F,                                 // L
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,         // O
+  SEG_A | SEG_D | SEG_E | SEG_F,                         // C
+ };
+
 void port_1_init(void) {
   servo.attach(SERVO_PIN);
   pinMode(MOTOR1_A, OUTPUT);
@@ -98,6 +105,17 @@ void port_5_init(void) {
   pinMode(BUZ_PIN, OUTPUT);
   pinMode(LINE_PIN, INPUT);
   digitalWrite(BUZ_PIN, 1);
+}
+
+void buzz_samples(void){
+  digitalWrite(BUZ_PIN,0);
+  delay(10);
+  digitalWrite(BUZ_PIN,1);
+  delay(2000);
+  digitalWrite(BUZ_PIN,0);
+  delay(25);
+  digitalWrite(BUZ_PIN,1);
+  delay(2000);
 }
 
 void port_6_init(void) {

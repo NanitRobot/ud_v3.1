@@ -82,5 +82,7 @@ void parkin(void);
 void step_forward(void);
 void step_backward(void);
 
+void buzz_samples(void); 
+
 void setPassword(char* pass);
 
