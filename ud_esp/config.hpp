@@ -1,7 +1,6 @@
 #include <NanitLib.h>
 #include <DHT.h>
-#include <TinyStepper.h>
-#include <TM1637.h>
+#include <TM1637Display.h>
 #include <Keypad.h>  
 #include <Password.h>
 
@@ -63,8 +62,6 @@
 #define wifi_esp 1      //Якщо в розумному будинку використовується WiFi то має бути розкоментовано якщо ні - закоментуйте
 // #define bluetooth 1  //Якщо в розумному будинку використовується BlTh то має бути розкоментовано якщо ні - закоментуйте
 
-#define HALFSTEPS 1023 // Кількість півкроків для повного оберту (Number of half-steps for a full rotation)
-
 void port_1_init(void);
 void port_2_init(void);
 void port_3_init(void);
@@ -73,13 +70,17 @@ void port_5_init(void);
 void port_6_init(void); 
 void port_9_init(void);
 
+void traffic_light(bool r_led,bool y_led,bool g_led);
+
 void initdisplay(void);
 
 void displaySensors(void);
 void C_O_filter(void);
 void window(void);
 void parkin(void);
-int ultrasonic(void);
+
+void step_forward(void);
+void step_backward(void);
 
 void setPassword(char* pass);
 

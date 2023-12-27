@@ -2,9 +2,10 @@
 
 Servo servo;
 Password password = Password("123A");
-TinyStepper stepper(HALFSTEPS, IN1, IN2, IN3, IN4);
 DHT dht(DHT11_PIN, DHT11);
-TM1637D tm(CLK, DIO);
+TM1637Display tm(CLK, DIO);
+
+const byte step_pin[4]{IN1,IN2,IN3,IN4};
 
 bool
   parkin_flag = 0;
@@ -28,6 +29,27 @@ float
 uint16_t light_start = 0;
 #endif
 
+const uint8_t word_stop[] ={
+  SEG_A | SEG_C | SEG_D | SEG_F | SEG_G,            // S
+  SEG_D | SEG_E | SEG_F | SEG_G,                    // t
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,    // O
+  SEG_A | SEG_B | SEG_E | SEG_F | SEG_G             // P
+};
+
+const uint8_t word_wait[] ={
+  SEG_B | SEG_D | SEG_F | SEG_G,                    // W
+  SEG_A | SEG_B | SEG_C | SEG_E | SEG_F | SEG_G,    // A
+  SEG_B | SEG_C,                                    // I
+  SEG_D | SEG_E | SEG_F | SEG_G,                    // t
+};
+
+const uint8_t word_open[] ={
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,    // O
+  SEG_A | SEG_B | SEG_E | SEG_F | SEG_G,            // P
+  SEG_A | SEG_D | SEG_E | SEG_F | SEG_G,            // E
+  SEG_C | SEG_E | SEG_G,                            // n
+};
+
 void port_1_init(void) {
   servo.attach(SERVO_PIN);
   pinMode(MOTOR1_A, OUTPUT);
@@ -40,7 +62,10 @@ void port_1_init(void) {
 }
 
 void port_2_init(void) {
-  stepper.Enable();
+  for(short k =0; k<4; k++){
+    pinMode(step_pin[k],OUTPUT);
+    digitalWrite(step_pin[k], 0);
+  }
 }
 
 void port_3_init(void) {
@@ -55,6 +80,7 @@ void port_3_init(void) {
   pinMode(RGB_BLU, OUTPUT);
   digitalWrite(RGB_RDL | RGB_GRN | RGB_BLU, 0);
 #endif
+  traffic_light(1, 0, 0);
 }
 
 void port_4_init(void) {
@@ -85,10 +111,9 @@ void port_6_init(void) {
 void port_9_init(void) {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
-  tm.begin();
-  tm.setBrightness(4);
   digitalWrite(TRIG_PIN, 0);
-  tm.display("STOP");
+  tm.setBrightness(0x0f);
+  tm.setSegments(word_stop);
 }
 
 void initdisplay(void) {
@@ -150,6 +175,17 @@ void displaySensors(void) {
     tft.fillRect(70, 70, 70, 15, background_screen);
     prev_hum = last_hum;
   }
+    if (digitalRead(LIGHT_PIN)) {
+    background_screen =!background_screen;
+    delay(10);
+    tft.setTextColor(!background_screen);
+    tft.fillScreen(background_screen);
+  } 
+  else 
+  {
+    background_screen = ST7735_WHITE;
+    tft.setTextColor(ST7735_BLACK);
+  }
 }
 
 void C_O_filter(void) {
@@ -164,23 +200,57 @@ void window(void) {
   servo.write((digitalRead(LINE_PIN) ? 0 : 90));
 }
 
+void traffic_light(bool r_led, bool y_led, bool g_led) {
+  digitalWrite(TL_RED, r_led);
+  digitalWrite(TL_YELLOW, y_led);
+  digitalWrite(TL_GREEN, g_led);
+}
+
+void step_forward(void){
+  for(byte k = 0; k < 32; k++)
+  {
+    for(short i = 0; i<4; i++)
+    {
+      digitalWrite(step_pin[i], 1);
+      delay(5);
+      digitalWrite(step_pin[i],0);
+    }
+  }
+}
+void step_backward(void){
+  for(byte k = 0; k < 32; k++)
+  {
+    for(short i = 3; i>=0; i--)
+    {
+      digitalWrite(step_pin[i], 1);
+      delay(5);
+      digitalWrite(step_pin[i],0);
+    }
+  }
+}
 void parkin(void) {
   digitalWrite(TRIG_PIN, 1);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, 0);
   int cm = pulseIn(ECHO_PIN, 1) / 58;
 
-  if (cm < 10 && parkin_flag == 0) {
-    // tm.clearScreen();
-    tm.display("OPEN");
-    stepper.Move(-90);
-    delay(2000);
+  if (cm < 5 && parkin_flag == 0) {
+    tm.clear();
+    tm.setSegments(word_wait);
+    traffic_light(0, 1, 0);
+    step_backward();
+    tm.clear();
+    tm.setSegments(word_open);
+    traffic_light(0, 0, 1);
     parkin_flag = 1;
-  } else if (cm > 10 && parkin_flag == 1) {
-    // tm.clearScreen();
-    tm.display("STOP");
-    stepper.Move(90);
-    delay(2000);
+  } else if (cm > 5 && parkin_flag == 1) {
+    tm.clear();
+    tm.setSegments(word_wait);
+    traffic_light(0, 1, 0);
+    step_forward();
+    traffic_light(1, 0, 0);
+    tm.clear();
+    tm.setSegments(word_stop);
     parkin_flag = 0;
   }
 }
