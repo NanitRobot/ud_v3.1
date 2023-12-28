@@ -107,16 +107,43 @@ void port_5_init(void) {
   digitalWrite(BUZ_PIN, 1);
 }
 
-void buzz_samples(void){
-  digitalWrite(BUZ_PIN,0);
-  delay(10);
-  digitalWrite(BUZ_PIN,1);
-  delay(2000);
-  digitalWrite(BUZ_PIN,0);
-  delay(25);
-  digitalWrite(BUZ_PIN,1);
-  delay(2000);
+#ifdef active_buz
+void alert_buz(void)
+{
+  for (int i=0; i<600; i++) 
+  {
+    digitalWrite(A12, !digitalRead(A12));
+    delayMicroseconds(800);
+  }
 }
+
+void keytap_buz(void)
+{
+  for (int i=0; i<400; i++) 
+  {     
+    digitalWrite(A12, !digitalRead(A12));
+    delayMicroseconds(200);
+  }
+}
+
+void access_grant_buz(void)
+{
+  for (int i=0; i<2000; i++) 
+  {     
+    digitalWrite(A12, !digitalRead(A12));
+    delayMicroseconds(150);
+  }
+}
+
+void access_denid_buz(void)
+{
+  for (int i=0; i<700; i++) 
+  {
+    digitalWrite(A12, !digitalRead(A12));
+    delayMicroseconds(700);
+  }
+}
+#endif
 
 void port_6_init(void) {
   dht.begin();

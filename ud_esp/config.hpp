@@ -82,7 +82,13 @@ void parkin(void);
 void step_forward(void);
 void step_backward(void);
 
-void buzz_samples(void); 
+#ifdef active_buz
+void alert_buz(void);
+void keytap_buz(void);
+void access_grant_buz(void);
+void access_denid_buz(void);
+#endif
+
 
 void setPassword(char* pass);
 
