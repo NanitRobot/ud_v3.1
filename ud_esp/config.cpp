@@ -91,6 +91,8 @@ void keypad(void)
       case '#': checkPassword(); break;
       default: processNumberKey(Key);
     }
+    rgb4_set(0, 0, 1);
+  delay(50);
   }
 }
 
@@ -114,12 +116,14 @@ bool checkPassword(void)
     lock_flag = 1; // Вимкнення режиму введення пароля (Turn off password entry mode)
     tft.fillScreen(background_screen);
     return true;
+    rgb4_set(0, 1, 0);
   } 
   else 
   {
     tft.fillScreen(ST7735_RED);
     lock_flag = 0;
     return false;
+    rgb4_set(1, 0, 0);
   }
   resetPassword();
 }
@@ -396,4 +400,5 @@ void lock_home(void)
     alert_buz();
   }
   tft.fillScreen(ST7735_RED);
+  rgb4_set(1, 0, 0);
 }
