@@ -20,7 +20,7 @@
 #define TL_RED    P3_2
 #define TL_YELLOW P3_3
 #define TL_GREEN  P3_4
-#elif rgb_led3
+#elif defined(rgb_led3)
 #define RGB_RDL P3_2
 #define RGB_GRN P3_3
 #define RGB_BLU P3_4
@@ -71,6 +71,8 @@ void port_6_init(void);
 void port_9_init(void);
 
 void traffic_light(bool r_led,bool y_led,bool g_led);
+
+void rgb4_set(bool r_led,bool g_led, bool b_led);
 
 void initdisplay(void);
 
