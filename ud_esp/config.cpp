@@ -392,7 +392,7 @@ void lock_home(void)
   tm.clear();
   tm.setSegments(seg_bloc);
   step_lock();
-  if (digitalRead(PIR_PIN) || digitalRead(SOUND_PIN)) {
+  if (digitalRead(PIR_PIN) || !digitalRead(SOUND_PIN)) {
     alert_buz();
   }
   tft.fillScreen(ST7735_RED);
