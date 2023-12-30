@@ -81,6 +81,7 @@ void parkin(void);
 
 void step_forward(void);
 void step_backward(void);
+void step_lock(void);
 
 #ifdef active_buz
 void alert_buz(void);
@@ -89,6 +90,12 @@ void access_grant_buz(void);
 void access_denid_buz(void);
 #endif
 
+void keypad(void);
+void processNumberKey(char key);
+bool checkPassword(void);
+void resetPassword(void);
 
-void setPassword(char* pass);
+bool locck(void);
+
+void lock_home(void);
 

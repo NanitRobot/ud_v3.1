@@ -1,7 +1,6 @@
 #include "config.hpp"
 
 Servo servo;
-Password password = Password("123A");
 DHT dht(DHT11_PIN, DHT11);
 TM1637Display tm(CLK, DIO);
 
@@ -9,7 +8,8 @@ const byte step_pin[4]{IN1,IN2,IN3,IN4};
 
 bool
   parkin_flag = 0,
-  light = 0 ;
+  light = 0,
+  lock_flag = 0;
 
 int
   prev_gas = 0,
@@ -57,6 +57,79 @@ const uint8_t seg_bloc[] = {
   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,         // O
   SEG_A | SEG_D | SEG_E | SEG_F,                         // C
  };
+
+const byte ROWS = 4; // Кількість рядків у клавіатурі (Number of rows in the keypad)
+const byte COLS = 4; // Кількість стовпців у клавіатурі (Number of columns in the keypad)
+// Масив символів для клавіш(Array of characters)
+char hexaKeys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+// Масив пінів для рядків та стовпців (Array of pins for rows and columns)
+byte rowPins[ROWS] = {R1, R2, R3, R4};
+byte colPins[COLS] = {C1, C2, C3, C4};
+// Створення об'єкту класу Keypad(Creating a Keypad class object)
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
+Password password = Password("123A");
+String newPassword;  // зберігає новий пароль (holds the new password)
+char passchars[6];   // символи для newPassword (characters of newPassword)
+byte maxPasswordLength = 6;
+byte currentPasswordLength = 0;
+
+
+void keypad(void)
+{
+  char Key = customKeypad.getKey(); // Зчитування натиснутої клавіші (Reading the pressed key)
+  if (Key)
+  {
+    keytap_buz();
+    switch (Key) {
+      case '*': resetPassword(); break;
+      case '#': checkPassword(); break;
+      default: processNumberKey(Key);
+    }
+  }
+}
+
+void processNumberKey(char key) 
+{
+  currentPasswordLength++;
+  password.append(key);
+  if (currentPasswordLength == maxPasswordLength) 
+  {
+    // Якщо довжина пароля більше 6, то виконати перевірку (If password length is more than 6, perform password check)
+    if (checkPassword()){for (short i = 0; i<3; i++){access_grant_buz();}}
+    else {for (short i = 0; i<10; i++){access_denid_buz();}} 
+  }
+}
+
+bool checkPassword(void) 
+{
+  if (password.evaluate()) 
+  {
+    tft.fillScreen(ST7735_GREEN);
+    lock_flag = 1; // Вимкнення режиму введення пароля (Turn off password entry mode)
+    tft.fillScreen(background_screen);
+    return true;
+  } 
+  else 
+  {
+    tft.fillScreen(ST7735_RED);
+    lock_flag = 0;
+    return false;
+  }
+  resetPassword();
+}
+
+void resetPassword() 
+{
+  password.reset(); // Скидання пароля (Reset password)
+  currentPasswordLength = 0;
+}
+
+bool locck(void){return lock_flag;}
 
 void port_1_init(void) {
   servo.attach(SERVO_PIN);
@@ -112,8 +185,8 @@ void alert_buz(void)
 {
   for (int i=0; i<600; i++) 
   {
-    digitalWrite(A12, !digitalRead(A12));
-    delayMicroseconds(800);
+    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    delayMicroseconds(400);
   }
 }
 
@@ -121,8 +194,8 @@ void keytap_buz(void)
 {
   for (int i=0; i<400; i++) 
   {     
-    digitalWrite(A12, !digitalRead(A12));
-    delayMicroseconds(200);
+    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    delayMicroseconds(100);
   }
 }
 
@@ -130,8 +203,8 @@ void access_grant_buz(void)
 {
   for (int i=0; i<2000; i++) 
   {     
-    digitalWrite(A12, !digitalRead(A12));
-    delayMicroseconds(150);
+    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    delayMicroseconds(75);
   }
 }
 
@@ -139,8 +212,8 @@ void access_denid_buz(void)
 {
   for (int i=0; i<700; i++) 
   {
-    digitalWrite(A12, !digitalRead(A12));
-    delayMicroseconds(700);
+    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    delayMicroseconds(350);
   }
 }
 #endif
@@ -165,7 +238,7 @@ void port_9_init(void) {
 
 void initdisplay(void) {
   Nanit_Base_Start();
-  if (light) {
+  if (!light) {
     background_screen = ST7735_BLACK;
     tft.setTextColor(ST7735_WHITE);
   } else {
@@ -248,7 +321,8 @@ void traffic_light(bool r_led, bool y_led, bool g_led) {
   digitalWrite(TL_GREEN, g_led);
 }
 
-void step_forward(void){
+void step_forward(void)
+{
   for(byte k = 0; k < 32; k++)
   {
     for(short i = 0; i<4; i++)
@@ -259,6 +333,7 @@ void step_forward(void){
     }
   }
 }
+
 void step_backward(void){
   for(byte k = 0; k < 32; k++)
   {
@@ -270,6 +345,9 @@ void step_backward(void){
     }
   }
 }
+
+void step_lock(void){for(short k =0; k<4; k++){digitalWrite(step_pin[k], 0);}}
+
 void parkin(void) {
   digitalWrite(TRIG_PIN, 1);
   delayMicroseconds(10);
@@ -297,7 +375,14 @@ void parkin(void) {
   }
 }
 
-
-void setPassword(char* pass) {
-  password.set(pass);
+void lock_home(void)
+{
+  servo.write(0);
+  tm.clear();
+  tm.setSegments(seg_bloc);
+  step_lock();
+  if (digitalRead(PIR_PIN) || digitalRead(SOUND_PIN)) {
+    alert_buz();
+  }
+  tft.fillScreen(ST7735_RED);
 }
