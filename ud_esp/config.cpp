@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "config.hpp"
 
 Servo servo;
@@ -9,7 +10,7 @@ const byte step_pin[4]{IN1,IN2,IN3,IN4};
 bool
   parkin_flag = 0,
   light = 0,
-  lock_flag = 0;
+  lock_flag = 1;
 
 int
   prev_gas = 0,
@@ -150,17 +151,21 @@ void port_2_init(void) {
 }
 
 void port_3_init(void) {
+byte pin_port[3] = {0};
 #ifdef separate_leds3
-  pinMode(TL_RED, OUTPUT);
-  pinMode(TL_YELLOW, OUTPUT);
-  pinMode(TL_GREEN, OUTPUT);
-  digitalWrite(TL_RED | TL_YELLOW | TL_GREEN, 0);
-#elif rgb_led3
-  pinMode(RGB_RDL, OUTPUT);
-  pinMode(RGB_GRN, OUTPUT);
-  pinMode(RGB_BLU, OUTPUT);
-  digitalWrite(RGB_RDL | RGB_GRN | RGB_BLU, 0);
+pin_port[0] = TL_RED;
+pin_port[1] = TL_YELLOW;
+pin_port[2] = TL_GREEN;
+#elif defined(rgb_led3)
+pin_port[0] = RGB_RDL;
+pin_port[1] = RGB_GRN;
+pin_port[2] = RGB_BLU;
 #endif
+  for (short i = 0; i<3; i++) 
+  {
+    pinMode(pin_port[i], OUTPUT);
+    digitalWrite(pin_port[i], 0);
+  }
   traffic_light(1, 0, 0);
 }
 
@@ -168,8 +173,7 @@ void port_4_init(void) {
   pinMode(RGB_RED, OUTPUT);
   pinMode(RGB_GREEN, OUTPUT);
   pinMode(RGB_BLUE, OUTPUT);
-  digitalWrite(RGB_GREEN, 1);
-  digitalWrite(RGB_RED | RGB_BLUE, 0);
+  rgb4_set(1, 0, 0);
 }
 
 void port_5_init(void) {
@@ -319,6 +323,13 @@ void traffic_light(bool r_led, bool y_led, bool g_led) {
   digitalWrite(TL_RED, r_led);
   digitalWrite(TL_YELLOW, y_led);
   digitalWrite(TL_GREEN, g_led);
+}
+
+void rgb4_set(bool r_led, bool g_led, bool b_led)
+{
+  digitalWrite(RGB_RED, r_led);
+  digitalWrite(RGB_GREEN, g_led);
+  digitalWrite(RGB_BLUE, b_led);
 }
 
 void step_forward(void)
