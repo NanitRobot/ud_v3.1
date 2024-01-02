@@ -320,7 +320,7 @@ void C_O_filter(void) {
 }
 
 void window(void) {
-  servo.write((digitalRead(LINE_PIN) ? 0 : 90));
+  servo.write((((digitalRead(LINE_PIN)) || (!digitalRead(LIGHT_PIN)))? 0 : 90));
 }
 
 void traffic_light(bool r_led, bool y_led, bool g_led) {
@@ -396,7 +396,7 @@ void lock_home(void)
   tm.clear();
   tm.setSegments(seg_bloc);
   step_lock();
-  if (digitalRead(PIR_PIN) || !digitalRead(SOUND_PIN)) {
+  if (digitalRead(PIR_PIN) || digitalRead(SOUND_PIN)) {
     alert_buz();
   }
   tft.fillScreen(ST7735_RED);
