@@ -312,7 +312,7 @@ void displaySensors(void) {
 }
 
 void C_O_filter(void) {
-  if (prev_gas > 120 || prev_tmp > 33 || prev_hum > 66) {
+  if (prev_gas > 200 || prev_tmp > 33 || prev_hum > 66) {
     digitalWrite(MOTOR1_A, 1);
   } else {
     digitalWrite(MOTOR1_A, 0);
