@@ -94,7 +94,7 @@ void access_denid_buz(void);
 
 void keypad(void);
 void processNumberKey(char key);
-bool checkPassword(void);
+void checkPassword(void);
 void resetPassword(void);
 
 bool locck(void);
