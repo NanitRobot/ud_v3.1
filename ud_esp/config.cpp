@@ -248,7 +248,7 @@ void port_9_init(void) {
 
 void initdisplay(void) {
   Nanit_Base_Start();
-  if (!light) {
+  if (light) {
     background_screen = ST7735_BLACK;
     tft.setTextColor(ST7735_WHITE);
   } else {
@@ -322,10 +322,8 @@ void C_O_filter(void) {
 }
 
 void window(void) {
-  if(!digitalRead(LIGHT_PIN)){
-    window_flag = 1;
-    if(!digitalRead(LINE_PIN)){window_flag = 0;}
-    }
+  if(!digitalRead(LIGHT_PIN)){window_flag = 1;}
+  if(!digitalRead(LINE_PIN)){window_flag = 0;}
   servo.write((window_flag)?90:0);
 }
 
