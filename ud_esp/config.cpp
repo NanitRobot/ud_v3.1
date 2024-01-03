@@ -10,7 +10,9 @@ const byte step_pin[4]{IN1,IN2,IN3,IN4};
 bool
   parkin_flag = 0,
   light = 0,
-  lock_flag = 1;
+  lock_flag = 1,
+  window_flag = 0,
+  prev_window = 0;
 
 int
   prev_gas = 0,
@@ -320,7 +322,11 @@ void C_O_filter(void) {
 }
 
 void window(void) {
-  servo.write((((digitalRead(LINE_PIN)) || (!digitalRead(LIGHT_PIN)))? 0 : 90));
+  if(!digitalRead(LIGHT_PIN)){
+    window_flag = 1;
+    if(!digitalRead(LINE_PIN)){window_flag = 0;}
+    }
+  servo.write((window_flag)?90:0);
 }
 
 void traffic_light(bool r_led, bool y_led, bool g_led) {
