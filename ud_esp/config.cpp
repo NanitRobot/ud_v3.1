@@ -338,24 +338,24 @@ void rgb4_set(bool r_led, bool g_led, bool b_led)
 
 void step_forward(void)
 {
-  for(byte k = 0; k < 32; k++)
+  for(byte k = 0; k < 128; k++)
   {
-    for(short i = 0; i<4; i++)
+    for(short i = 0; i<=3; i++)
     {
       digitalWrite(step_pin[i], 1);
-      delay(5);
+      delay(3);
       digitalWrite(step_pin[i],0);
     }
   }
 }
 
 void step_backward(void){
-  for(byte k = 0; k < 32; k++)
+  for(byte k = 0; k < 128; k++)
   {
     for(short i = 3; i>=0; i--)
     {
       digitalWrite(step_pin[i], 1);
-      delay(5);
+      delay(3);
       digitalWrite(step_pin[i],0);
     }
   }
