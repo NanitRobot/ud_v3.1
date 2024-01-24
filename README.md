@@ -51,9 +51,9 @@
 
 | Колір світлодіда | Макрос піна в NanitLib |
 | ----------- | ----------- | 
-| <span style="color: red;">Red LED</span> | `P3_2` |
-| <span style="color: yellow;">Yellow LED</span> | `P3_3` |
-| <span style="color: green;">Green LED</span> | `P3_4` |
+| <font color="red">Red LED</font> | `P3_2` |
+| <font color="yellow">Yellow LED</font> | `P3_3` |
+| <font color="green">Green LED</font> | `P3_4` |
 
 ## Порт 4: Світлофор
 
@@ -63,9 +63,9 @@
 
 | Колір RGB | Макрос піна в NanitLib |
 | ----------- | ----------- | 
-| <span style="color: red;">Red LED</span> | `P4_2` |
-| <span style="color: green;">Green LED</span> | `P4_3` |
-| <span style="color: blue;">Blue LED</span> | `P4_4` |
+| <font color="red">Red LED</font> | `P4_2` |
+| <font color="green">Green LED</font> | `P4_3` |
+| <font color="blue">Blue LED</font> | `P4_4` |
 
 На малюнку схемі розпіновка йде в такому порядку `B`(синій колір), `G`(зелений колір), `R`(червоний колір) та `-`(маса/мінус). За часту все йде в порядку `R` `G` `B` `-`. Звертайте увагу на маркування ніжок.
 
