@@ -22,10 +22,10 @@ void loop()
     C_O_filter();
     window();
     parkin();
-    rgb4_set(0, 1, 0);
+    rgb4_set(GREEN);
   }
   else{
     lock_home();
-    rgb4_set(1, 0, 0);
+    rgb4_set(RED);
   }
 }
