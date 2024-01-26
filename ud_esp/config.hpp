@@ -46,6 +46,11 @@
 #define active_buz 1
 // #define pasive_buz 1
 
+#define ALERT 1
+#define KEYTAP 2 
+#define ACS_DNID 3
+#define ACS_GRNT 4
+
 #define DHT11_PIN P6_1    // Цифровий пін для DHT 11 (Digital Pin for DHT11 Sensor)
 #define MQ7_PIN   P6_2    // Аналоговий пін для датчика газу (Analog Pin for Gas Sensor)
 #define LIGHT_PIN P6_3    // Цифровий пін для датчика світла (Digital Pin for Light Sensor)
@@ -93,12 +98,7 @@ void step_forward(void);
 void step_backward(void);
 void step_lock(void);
 
-#ifdef active_buz
-void alert_buz(void);
-void keytap_buz(void);
-void access_grant_buz(void);
-void access_denid_buz(void);
-#endif
+void buzz_sound(uint8_t sound);
 
 void keypad(void);
 void processNumberKey(char key);

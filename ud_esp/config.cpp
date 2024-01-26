@@ -85,7 +85,7 @@ byte currentPasswordLength = 0;
 void keypad(void) {
   char Key = customKeypad.getKey();  // Зчитування натиснутої клавіші (Reading the pressed key)
   if (Key) {
-    keytap_buz();
+    buzz_sound(KEYTAP);
     switch (Key) {
       case '*': resetPassword(); break;
       case '#': checkPassword(); break;
@@ -109,10 +109,10 @@ void checkPassword(void) {
   if (password.evaluate()) {
     for (byte i = 0; i <= 6; i++) {
       rgb4_set(1, 1, 0);
-      access_grant_buz();
+      buzz_sound(ACS_GRNT);
       delay(25);
       rgb4_set(0, 0, 0);
-      access_grant_buz();
+      buzz_sound(ACS_GRNT);
     }
     lock_flag = !lock_flag;
     if (lock_flag) {
@@ -134,19 +134,19 @@ void checkPassword(void) {
     tft.print("PASS");
     for (byte i = 0; i <= 5; i++) {
       rgb4_set(1, 0, 1);
-      access_denid_buz();
+      buzz_sound(ACS_DNID);
       delay(10);
       rgb4_set(1, 0, 0);
-      access_denid_buz();
+      buzz_sound(ACS_DNID);
       delay(10);
       rgb4_set(0, 0, 0);
-      access_denid_buz();
+      buzz_sound(ACS_DNID);
       delay(10);
       rgb4_set(1, 0, 0);
-      access_denid_buz();
+      buzz_sound(ACS_DNID);
       delay(10);
       rgb4_set(1, 0, 1);
-      access_denid_buz();
+      buzz_sound(ACS_DNID);
       delay(10);
       tm.clear();
       tm.setSegments(seg_bloc);
@@ -217,41 +217,64 @@ void port_5_init(void) {      // Функція ініціалізації 5-г�
   digitalWrite(BUZ_PIN, 1);   // Вимикання базера (Turning Off the Buzzer)
 }
 
+void buzz_sound(uint8_t sound) {
+  switch (sound) {
+    case ALERT:
 #ifdef active_buz
-void alert_buz(void) {
-  for (int i = 0; i < 600; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
-    delayMicroseconds(400);
-  }
-}
-
-void keytap_buz(void) {
-  for (int i = 0; i < 400; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
-    delayMicroseconds(100);
-  }
-}
-
-void access_grant_buz(void) {
-  for (int i = 0; i < 2000; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
-    delayMicroseconds(75);
-  }
-}
-
-void access_denid_buz(void) {
-  for (int i = 0; i < 700; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
-    delayMicroseconds(350);
-  }
-}
+      for (int i = 0; i < 600; i++) {
+        digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
+        delayMicroseconds(400);
+      }
+#elif defined(pasive_buz)
+      tone(BUZ_PIN, 250);
+      delay(240);
+      noTone(BUZ_PIN);
 #endif
+      break;
+    case KEYTAP:
+#ifdef active_buz
+      for (int i = 0; i < 400; i++) {
+        digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
+        delayMicroseconds(100);
+      }
+#elif defined(pasive_buz)
+      tone(BUZ_PIN, 1200);
+      delay(40);
+      noTone(BUZ_PIN);
+      break;
+#endif
+    case ACS_DNID:
+#ifdef active_buz
+      for (int i = 0; i < 700; i++) {
+        digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
+        delayMicroseconds(350);
+      }
+#elif defined(pasive_buz)
+      tone(BUZ_PIN, 180);
+      delay(290);
+      noTone(BUZ_PIN);
+#endif
+      break;
+    case ACS_GRNT:
+#ifdef active_buz
+      for (int i = 0; i < 2000; i++) {
+        digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
+        delayMicroseconds(75);
+      }
+#elif defined(pasive_buz)
+      tone(BUZ_PIN, 800);
+      delay(150);
+      noTone(BUZ_PIN);
+#endif
+      break;
+  }
+}
 
-void port_6_init(void) {          // Функція ініціалізації 6-го порта (Initialization Function for Port 6)
-  dht.begin();                    // Метод ініціалізації датчика DHT11 (Method for Initializing the DHT11 Sensor)
-  pinMode(MQ7_PIN, INPUT);        // Налаштування піна для датчика газу (Configuration of the Pin for the Gas Sensor)
-  pinMode(LIGHT_PIN, INPUT);      // Налаштування піна для датчика світла (Configuration of the Pin for the Light Sensor)
-  light = digitalRead(LIGHT_PIN); // Зчитування початкового стану світла (Reading the Initial State of the Light)
+void port_6_init(void) {           // Функція ініціалізації 6-го порта (Initialization Function for Port 6)
+  dht.begin();                     // Метод ініціалізації датчика DHT11 (Method for Initializing the DHT11 Sensor)
+  pinMode(MQ7_PIN, INPUT);         // Налаштування піна для датчика газу (Configuration of the Pin for the Gas Sensor)
+  pinMode(LIGHT_PIN, INPUT);       // Налаштування піна для датчика світла (Configuration of the Pin for the Light Sensor)
+  light = digitalRead(LIGHT_PIN);  // Зчитування початкового стану світла (Reading the Initial State of the Light)
 }
 
 void port_9_init(void) {
@@ -446,7 +469,7 @@ void lock_home(void) {
   tm.setSegments(seg_bloc);
   step_lock();
   if (digitalRead(PIR_PIN) || !digitalRead(SOUND_PIN) || !digitalRead(LINE_PIN)) {
-    for (byte i = 0; i < 2; i++) { alert_buz(); }
+    for (byte i = 0; i < 2; i++) { buzz_sound(ALERT); }
     tft.setCursor(10, 40);
     tft.setTextSize(3);
     tft.setTextColor(ST7735_WHITE);
