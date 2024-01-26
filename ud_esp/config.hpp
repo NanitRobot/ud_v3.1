@@ -8,39 +8,47 @@
 //MOTOR1_A вже готовий дефайн P1_3 
 //MOTOR1_B вже готовий дефайн P1_4
 
-#define IN1       P2_1
-#define IN2       P2_2
-#define IN3       P2_3
-#define IN4       P2_4
+#define IN1       P2_1    // Пін 1 для крокового двигуна
+#define IN2       P2_2    // Пін 2 для крокового двигуна
+#define IN3       P2_3    // Пін 3 для крокового двигуна
+#define IN4       P2_4    // Пін 4 для крокового двигуна
 
-// #define rgb_led3 1
-#define separate_leds3 1
+// #define rgb_led3 1     // Макрос для RGB світлофора (Macro for RGB Traffic Light)
+#define separate_leds3 1  // Макрос для звичайного світлофора (Macro for Standard Traffic Light)
 
-#ifdef separate_leds3
-#define TL_RED    P3_2
-#define TL_YELLOW P3_3
-#define TL_GREEN  P3_4
-#elif defined(rgb_led3)
-#define RGB_RDL P3_2
-#define RGB_GRN P3_3
-#define RGB_BLU P3_4
+#if defined(separate_leds3)     // Піни звичайного світлофора (Pins of a Standard Traffic Light)
+
+#define TL_RED    P3_2          // Пін червоного світлодіода для світлофора (Pin for the Red LED of the Traffic Light)
+#define TL_YELLOW P3_3          // Пін жовтого світлодіода для світлофора (Pin for the Yellow LED of the Traffic Light)
+#define TL_GREEN  P3_4          // Пін зеленого світлодіода для світлофора (Pin for the Green LED of the Traffic Light)
+
+#elif defined(rgb_led3)         // Піни RGB світлофора (Pins of an RGB Traffic Light)
+
+#define RGB_RDL P3_2            // Пін червоного кольору RGB світлофора (Pin for the Red Color of the RGB Traffic Light)
+#define RGB_GRN P3_3            // Пін зеленого кольору RGB світлофора  (Pin for the Green Color of the RGB Traffic Light)
+#define RGB_BLU P3_4            // Пін синього кольору RGB світлофора   (Pin for the Blue Color of the RGB Traffic Light)
+
 #endif
 
-#define RGB_RED   P4_2
-#define RGB_GREEN P4_3
-#define RGB_BLUE  P4_4
+#define RED 1    // Макрос червоного кольору для функції світлофора (Macro for the Red Color in the Traffic Light Function)
+#define YELLOW 2 // Макрос жовтого кольору для функції світлофора (Macro for the Yellow Color in the Traffic Light Function)
+#define GREEN 3  // Макрос зеленого кольору для функції світлофора (Macro for the Green Color in the Traffic Light Function)
 
-#define PIR_PIN   P5_1
-#define SOUND_PIN P5_2
-#define BUZ_PIN   P5_3
-#define LINE_PIN  P5_4
+#define RGB_RED   P4_2    // Пін червоного кольору RGB-світлодіода (Pin for the Red Color of the RGB LED)
+#define RGB_GREEN P4_3    // Пін зеленого кольору RGB-світлодіода (Pin for the Green Color of the RGB LED)
+#define RGB_BLUE  P4_4    // Пін синього кольору RGB-світлодіода (Pin for the Blue Color of the RGB LED)
+
+#define PIR_PIN   P5_1    // Пін для PIR датчика руху (Pin for PIR Motion Sensor)
+#define SOUND_PIN P5_2    // Пін для датчика звуку (Pin for Sound Sensor)
+#define BUZ_PIN   P5_3    // Пін для базера (Pin for Buzzer)
+#define LINE_PIN  P5_4    // Пін для датчика лінії (Pin for Line Sensor)
 
 #define active_buz 1
 // #define pasive_buz 1
 
-#define DHT11_PIN P6_1
-#define MQ7_PIN   P6_2
-#define LIGHT_PIN P6_3
+#define DHT11_PIN P6_1    // Цифровий пін для DHT 11 (Digital Pin for DHT11 Sensor)
+#define MQ7_PIN   P6_2    // Аналоговий пін для датчика газу (Analog Pin for Gas Sensor)
+#define LIGHT_PIN P6_3    // Цифровий пін для датчика світла (Digital Pin for Light Sensor)
 
 // #define LIGHT_4pin 1
 
@@ -70,7 +78,7 @@ void port_5_init(void);
 void port_6_init(void); 
 void port_9_init(void);
 
-void traffic_light(bool r_led,bool y_led,bool g_led);
+void traffic_light(uint8_t mode);
 
 void rgb4_set(bool r_led,bool g_led, bool b_led);
 

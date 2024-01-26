@@ -120,13 +120,11 @@ void checkPassword(void) {
       tft.setTextColor(~background_screen);
     } else {
       tm.clear();
-  tm.setSegments(seg_bloc);
+      tm.setSegments(seg_bloc);
       tft.fillScreen(ST7735_RED);
       tft.setTextColor(ST7735_WHITE);
     }
-  } 
-  else 
-  {
+  } else {
     tft.fillScreen(ST7735_RED);
     tft.setCursor(25, 20);
     tft.setTextSize(4);
@@ -168,24 +166,25 @@ bool locck(void) {
 }
 
 void port_1_init(void) {
-  servo.attach(SERVO_PIN);
-  pinMode(MOTOR1_A, OUTPUT);
-  pinMode(MOTOR1_B, OUTPUT);
-  pinMode(MOTOR_ENABLE, OUTPUT);
-  digitalWrite(MOTOR_ENABLE, 1);
-  digitalWrite(MOTOR1_A, 0);
-  digitalWrite(MOTOR1_B, 0);
-  servo.write(0);
+  servo.attach(SERVO_PIN);        // Приєднання сервоприводу до піна P1_1 під назвою SERVO_PIN мікроконтролера.
+  pinMode(MOTOR1_A, OUTPUT);      // Налаштування піна MOTOR1_A як вихідний (Setting pin MOTOR1_A as output)
+  pinMode(MOTOR1_B, OUTPUT);      // Налаштування піна MOTOR1_B як вихідний (Setting pin MOTOR1_B as output)
+  pinMode(MOTOR_ENABLE, OUTPUT);  // Налаштування піна MOTOR_ENABLE як вихідний (Setting pin MOTOR_ENABLE as output)
+  digitalWrite(MOTOR_ENABLE, 1);  // Включення вбудованого драйвера (Turning on the built-in driver)
+  digitalWrite(MOTOR1_A, 0);      // Зупинка двигунa (Stop Motor)
+  digitalWrite(MOTOR1_B, 0);      // На два канали  (On both channels)
+  servo.write(0);                 // Початкове положення сервоприводу (Initial position of the Servo)
 }
 
 void port_2_init(void) {
-  for (short k = 0; k < 4; k++) {
+  for (short k = 0; k < 4; k++)  // Налаштування пінів другого порта для крокового мотора через цикл та масив
+  {                              // (Setting up the pins of the port 2 for a stepper motor using a "for" and an array)
     pinMode(step_pin[k], OUTPUT);
     digitalWrite(step_pin[k], 0);
   }
 }
 
-void port_3_init(void) {
+void port_3_init(void) {  // Функція ініціалізації 3-го порта (Initialization Function for Port 3)
   byte pin_port[3] = { 0 };
 #ifdef separate_leds3
   pin_port[0] = TL_RED;
@@ -200,62 +199,59 @@ void port_3_init(void) {
     pinMode(pin_port[i], OUTPUT);
     digitalWrite(pin_port[i], 0);
   }
-  traffic_light(1, 0, 0);
+  traffic_light(RED);
 }
 
-void port_4_init(void) {
-  pinMode(RGB_RED, OUTPUT);
-  pinMode(RGB_GREEN, OUTPUT);
-  pinMode(RGB_BLUE, OUTPUT);
-  rgb4_set(1, 0, 0);
+void port_4_init(void) {       // Функція ініціалізації 4-го порта (Initialization Function for Port 4)
+  pinMode(RGB_RED, OUTPUT);    // Налаштування піна червоного кольору RGB (Configuration of the Red Color Pin for RGB)
+  pinMode(RGB_GREEN, OUTPUT);  // Налаштування піна зеленого кольору RGB (Configuration of the Green Color Pin for RGB)
+  pinMode(RGB_BLUE, OUTPUT);   // Налаштування піна синього кольору RGB (Configuration of the Blue Color Pin for RGB)
+  rgb4_set(0, 0, 0);
 }
 
-void port_5_init(void) {
-  pinMode(PIR_PIN, INPUT);
-  pinMode(SOUND_PIN, INPUT);
-  pinMode(BUZ_PIN, OUTPUT);
-  pinMode(LINE_PIN, INPUT);
-  digitalWrite(BUZ_PIN, 1);
+void port_5_init(void) {      // Функція ініціалізації 5-го порта (Initialization Function for Port 5)
+  pinMode(PIR_PIN, INPUT);    // Налаштування піна для PIR датчика руху (Setting up the Pin for the PIR Motion Sensor)
+  pinMode(SOUND_PIN, INPUT);  // Налаштування піна для датчика звуку (Setting up the Pin for the Sound Sensor)
+  pinMode(BUZ_PIN, OUTPUT);   // Налаштування піна для базера (Setting up the Pin for the Buzzer)
+  pinMode(LINE_PIN, INPUT);   // Налаштування піна для датчика лінії (Setting up the Pin for the Line Sensor)
+  digitalWrite(BUZ_PIN, 1);   // Вимикання базера (Turning Off the Buzzer)
 }
 
 #ifdef active_buz
 void alert_buz(void) {
   for (int i = 0; i < 600; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
     delayMicroseconds(400);
   }
 }
 
 void keytap_buz(void) {
   for (int i = 0; i < 400; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
     delayMicroseconds(100);
   }
 }
 
 void access_grant_buz(void) {
   for (int i = 0; i < 2000; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
     delayMicroseconds(75);
   }
 }
 
 void access_denid_buz(void) {
   for (int i = 0; i < 700; i++) {
-    digitalWrite(BUZ_PIN, !digitalRead(A12));
+    digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
     delayMicroseconds(350);
   }
 }
 #endif
 
-void port_6_init(void) {
-  dht.begin();
-  pinMode(MQ7_PIN, INPUT);
-  pinMode(LIGHT_PIN, INPUT);
-#ifdef LIGHT_4pin
-  light_start = analogRead(LIGHT_PIN);
-#endif
-  light = digitalRead(LIGHT_PIN);
+void port_6_init(void) {          // Функція ініціалізації 6-го порта (Initialization Function for Port 6)
+  dht.begin();                    // Метод ініціалізації датчика DHT11 (Method for Initializing the DHT11 Sensor)
+  pinMode(MQ7_PIN, INPUT);        // Налаштування піна для датчика газу (Configuration of the Pin for the Gas Sensor)
+  pinMode(LIGHT_PIN, INPUT);      // Налаштування піна для датчика світла (Configuration of the Pin for the Light Sensor)
+  light = digitalRead(LIGHT_PIN); // Зчитування початкового стану світла (Reading the Initial State of the Light)
 }
 
 void port_9_init(void) {
@@ -348,10 +344,44 @@ void window(void) {
   servo.write((window_flag) ? 90 : 0);
 }
 
-void traffic_light(bool r_led, bool y_led, bool g_led) {
-  digitalWrite(TL_RED, r_led);
-  digitalWrite(TL_YELLOW, y_led);
-  digitalWrite(TL_GREEN, g_led);
+void traffic_light(uint8_t mode) {
+#if defined(separate_leds3)
+  switch (mode) {
+    case RED:
+      digitalWrite(TL_RED, 1);
+      digitalWrite(TL_YELLOW, 0);
+      digitalWrite(TL_GREEN, 0);
+      break;
+    case YELLOW:
+      digitalWrite(TL_RED, 0);
+      digitalWrite(TL_YELLOW, 1);
+      digitalWrite(TL_GREEN, 0);
+      break;
+    case GREEN:
+      digitalWrite(TL_RED, 0);
+      digitalWrite(TL_YELLOW, 0);
+      digitalWrite(TL_GREEN, 1);
+      break;
+  }
+#elif defined(rgb_led3)
+  switch (mode) {
+    case RED:
+      digitalWrite(RGB_RDL, 1);
+      digitalWrite(RGB_GRN, 0);
+      digitalWrite(RGB_BLU, 0);
+      break;
+    case YELLOW:
+      digitalWrite(RGB_RDL, 1);
+      digitalWrite(RGB_GRN, 1);
+      digitalWrite(RGB_BLU, 0);
+      break;
+    case GREEN:
+      digitalWrite(RGB_RDL, 0);
+      digitalWrite(RGB_GRN, 1);
+      digitalWrite(RGB_BLU, 0);
+      break;
+  }
+#endif
 }
 
 void rgb4_set(bool r_led, bool g_led, bool b_led) {
@@ -393,18 +423,18 @@ void parkin(void) {
   if (cm < 5 && parkin_flag == 0) {
     tm.clear();
     tm.setSegments(word_wait);
-    traffic_light(0, 1, 0);
+    traffic_light(YELLOW);
     step_backward();
     tm.clear();
     tm.setSegments(word_open);
-    traffic_light(0, 0, 1);
+    traffic_light(GREEN);
     parkin_flag = 1;
   } else if (cm > 5 && parkin_flag == 1) {
     tm.clear();
     tm.setSegments(word_wait);
-    traffic_light(0, 1, 0);
+    traffic_light(YELLOW);
     step_forward();
-    traffic_light(1, 0, 0);
+    traffic_light(RED);
     tm.clear();
     tm.setSegments(word_stop);
     parkin_flag = 0;
