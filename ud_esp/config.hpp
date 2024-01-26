@@ -13,16 +13,16 @@
 #define IN3       P2_3    // Пін 3 для крокового двигуна
 #define IN4       P2_4    // Пін 4 для крокового двигуна
 
-// #define rgb_led3 1     // Макрос для RGB світлофора (Macro for RGB Traffic Light)
-#define separate_leds3 1  // Макрос для звичайного світлофора (Macro for Standard Traffic Light)
+// #define RGB_LED_3 1     // Макрос для RGB світлофора (Macro for RGB Traffic Light)
+#define SEPARATE_LEDS_3 1  // Макрос для звичайного світлофора (Macro for Standard Traffic Light)
 
-#if defined(separate_leds3)     // Піни звичайного світлофора (Pins of a Standard Traffic Light)
+#if defined(SEPARATE_LEDS_3)     // Піни звичайного світлофора (Pins of a Standard Traffic Light)
 
-#define TL_RED    P3_2          // Пін червоного світлодіода для світлофора (Pin for the Red LED of the Traffic Light)
-#define TL_YELLOW P3_3          // Пін жовтого світлодіода для світлофора (Pin for the Yellow LED of the Traffic Light)
-#define TL_GREEN  P3_4          // Пін зеленого світлодіода для світлофора (Pin for the Green LED of the Traffic Light)
+#define TL_RED P3_2          // Пін червоного світлодіода для світлофора (Pin for the Red LED of the Traffic Light)
+#define TL_YLW P3_3          // Пін жовтого світлодіода для світлофора (Pin for the Yellow LED of the Traffic Light)
+#define TL_GRN P3_4          // Пін зеленого світлодіода для світлофора (Pin for the Green LED of the Traffic Light)
 
-#elif defined(rgb_led3)         // Піни RGB світлофора (Pins of an RGB Traffic Light)
+#elif defined(RGB_LED_3)         // Піни RGB світлофора (Pins of an RGB Traffic Light)
 
 #define RGB_RDL P3_2            // Пін червоного кольору RGB світлофора (Pin for the Red Color of the RGB Traffic Light)
 #define RGB_GRN P3_3            // Пін зеленого кольору RGB світлофора  (Pin for the Green Color of the RGB Traffic Light)
@@ -52,8 +52,8 @@
 #define BUZ_PIN   P5_3    // Пін для базера (Pin for Buzzer)
 #define LINE_PIN  P5_4    // Пін для датчика лінії (Pin for Line Sensor)
 
-#define active_buz 1
-// #define pasive_buz 1
+#define ACTIVE_BUZZER 1
+// #define PASSIVE_BUZZER 1
 
 #define ALERT 1
 #define KEYTAP 2 
@@ -81,8 +81,8 @@
 #define CLK       P9_1
 #define DIO       P9_2
 
-#define wifi_esp 1      //Якщо в розумному будинку використовується WiFi то має бути розкоментовано якщо ні - закоментуйте
-// #define bluetooth 1  //Якщо в розумному будинку використовується BlTh то має бути розкоментовано якщо ні - закоментуйте
+// #define ESP_CONTROL 1 //Якщо в розумному будинку використовується WiFi то має бути розкоментовано якщо ні - закоментуйте
+// #define BT_CONTROL 1  //Якщо в розумному будинку використовується BlTh то має бути розкоментовано якщо ні - закоментуйте
 
 void port_1_init(void);
 void port_2_init(void);

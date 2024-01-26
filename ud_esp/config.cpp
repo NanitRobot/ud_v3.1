@@ -187,18 +187,18 @@ void port_2_init(void) {
 
 void port_3_init(void) {  // Функція ініціалізації 3-го порта (Initialization Function for Port 3)
   byte pin_port[3] = { 0 };
-#ifdef separate_leds3
+#ifdef SEPARATE_LEDS_3
   pin_port[0] = TL_RED;
-  pin_port[1] = TL_YELLOW;
-  pin_port[2] = TL_GREEN;
-#elif defined(rgb_led3)
+  pin_port[1] = TL_YLW;
+  pin_port[2] = TL_GRN;
+#elif defined(RGB_LED_3)
   pin_port[0] = RGB_RDL;
   pin_port[1] = RGB_GRN;
   pin_port[2] = RGB_BLU;
 #endif
   for (short i = 0; i < 3; i++) {
     pinMode(pin_port[i], OUTPUT);
-    digitalWrite(pin_port[i], 0);
+    digitalWrite(pin_port[i], LOW);
   }
   traffic_light(RED);
 }
@@ -215,54 +215,54 @@ void port_5_init(void) {      // Функція ініціалізації 5-г�
   pinMode(SOUND_PIN, INPUT);  // Налаштування піна для датчика звуку (Setting up the Pin for the Sound Sensor)
   pinMode(BUZ_PIN, OUTPUT);   // Налаштування піна для базера (Setting up the Pin for the Buzzer)
   pinMode(LINE_PIN, INPUT);   // Налаштування піна для датчика лінії (Setting up the Pin for the Line Sensor)
-  digitalWrite(BUZ_PIN, 1);   // Вимикання базера (Turning Off the Buzzer)
+  digitalWrite(BUZ_PIN, HIGH);   // Вимикання базера (Turning Off the Buzzer)
 }
 
 void buzz_sound(uint8_t sound) {
   switch (sound) {
     case ALERT:
-#ifdef active_buz
+#ifdef ACTIVE_BUZZER
       for (int i = 0; i < 600; i++) {
         digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
         delayMicroseconds(400);
       }
-#elif defined(pasive_buz)
+#elif defined(PASSIVE_BUZZER)
       tone(BUZ_PIN, 250);
       delay(240);
       noTone(BUZ_PIN);
 #endif
       break;
     case KEYTAP:
-#ifdef active_buz
+#ifdef ACTIVE_BUZZER
       for (int i = 0; i < 400; i++) {
         digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
         delayMicroseconds(100);
       }
-#elif defined(pasive_buz)
+#elif defined(PASSIVE_BUZZER)
       tone(BUZ_PIN, 1200);
       delay(40);
       noTone(BUZ_PIN);
       break;
 #endif
     case ACS_DNID:
-#ifdef active_buz
+#ifdef ACTIVE_BUZZER
       for (int i = 0; i < 700; i++) {
         digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
         delayMicroseconds(350);
       }
-#elif defined(pasive_buz)
+#elif defined(PASSIVE_BUZZER)
       tone(BUZ_PIN, 180);
       delay(290);
       noTone(BUZ_PIN);
 #endif
       break;
     case ACS_GRNT:
-#ifdef active_buz
+#ifdef ACTIVE_BUZZER
       for (int i = 0; i < 2000; i++) {
         digitalWrite(BUZ_PIN, !digitalRead(BUZ_PIN));
         delayMicroseconds(75);
       }
-#elif defined(pasive_buz)
+#elif defined(PASSIVE_BUZZER)
       tone(BUZ_PIN, 800);
       delay(150);
       noTone(BUZ_PIN);
@@ -281,7 +281,7 @@ void port_6_init(void) {           // Функція ініціалізації 
 void port_9_init(void) {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
-  digitalWrite(TRIG_PIN, 0);
+  digitalWrite(TRIG_PIN, LOW);
   tm.setBrightness(0x0f);
   tm.setSegments(word_stop);
 }
@@ -369,40 +369,40 @@ void window(void) {
 }
 
 void traffic_light(uint8_t color) {
-#if defined(separate_leds3)
+#if defined(SEPARATE_LEDS_3)
   switch (color) {
     case RED:
-      digitalWrite(TL_RED, 1);
-      digitalWrite(TL_YELLOW, 0);
-      digitalWrite(TL_GREEN, 0);
+      digitalWrite(TL_RED, HIGH);
+      digitalWrite(TL_YLW, LOW);
+      digitalWrite(TL_GRN, LOW);
       break;
     case YELLOW:
-      digitalWrite(TL_RED, 0);
-      digitalWrite(TL_YELLOW, 1);
-      digitalWrite(TL_GREEN, 0);
+      digitalWrite(TL_RED, LOW);
+      digitalWrite(TL_YLW, HIGH);
+      digitalWrite(TL_GRN, LOW);
       break;
     case GREEN:
-      digitalWrite(TL_RED, 0);
-      digitalWrite(TL_YELLOW, 0);
-      digitalWrite(TL_GREEN, 1);
+      digitalWrite(TL_RED, LOW);
+      digitalWrite(TL_YLW, LOW);
+      digitalWrite(TL_GRN, HIGH);
       break;
   }
-#elif defined(rgb_led3)
+#elif defined(RGB_LED_3)
   switch (mode) {
     case RED:
-      digitalWrite(RGB_RDL, 1);
-      digitalWrite(RGB_GRN, 0);
-      digitalWrite(RGB_BLU, 0);
+      digitalWrite(RGB_RDL, HIGH);
+      digitalWrite(RGB_GRN, LOW);
+      digitalWrite(RGB_BLU, LOW);
       break;
     case YELLOW:
-      digitalWrite(RGB_RDL, 1);
-      digitalWrite(RGB_GRN, 1);
-      digitalWrite(RGB_BLU, 0);
+      digitalWrite(RGB_RDL, HIGH);
+      digitalWrite(RGB_GRN, HIGH);
+      digitalWrite(RGB_BLU, LOW);
       break;
     case GREEN:
-      digitalWrite(RGB_RDL, 0);
-      digitalWrite(RGB_GRN, 1);
-      digitalWrite(RGB_BLU, 0);
+      digitalWrite(RGB_RDL, LOW);
+      digitalWrite(RGB_GRN, HIGH);
+      digitalWrite(RGB_BLU, LOW);
       break;
   }
 #endif
