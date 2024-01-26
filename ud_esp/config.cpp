@@ -1,3 +1,4 @@
+#include "NanitColors.hpp"
 #include "Arduino.h"
 #include "config.hpp"
 
@@ -91,7 +92,7 @@ void keypad(void) {
       case '#': checkPassword(); break;
       default: processNumberKey(Key);
     }
-    rgb4_set(0, 0, 1);
+    rgb4_set(BLUE);
     delay(50);
   }
 }
@@ -108,10 +109,10 @@ void processNumberKey(char key) {
 void checkPassword(void) {
   if (password.evaluate()) {
     for (byte i = 0; i <= 6; i++) {
-      rgb4_set(1, 1, 0);
+      rgb4_set(YELLOW);
       buzz_sound(ACS_GRNT);
       delay(25);
-      rgb4_set(0, 0, 0);
+      rgb4_set(OFF);
       buzz_sound(ACS_GRNT);
     }
     lock_flag = !lock_flag;
@@ -133,19 +134,19 @@ void checkPassword(void) {
     tft.setCursor(35, 50);
     tft.print("PASS");
     for (byte i = 0; i <= 5; i++) {
-      rgb4_set(1, 0, 1);
+      rgb4_set(PURPLE);
       buzz_sound(ACS_DNID);
       delay(10);
-      rgb4_set(1, 0, 0);
+      rgb4_set(RED);
       buzz_sound(ACS_DNID);
       delay(10);
-      rgb4_set(0, 0, 0);
+      rgb4_set(OFF);
       buzz_sound(ACS_DNID);
       delay(10);
-      rgb4_set(1, 0, 0);
+      rgb4_set(RED);
       buzz_sound(ACS_DNID);
       delay(10);
-      rgb4_set(1, 0, 1);
+      rgb4_set(PURPLE);
       buzz_sound(ACS_DNID);
       delay(10);
       tm.clear();
@@ -206,7 +207,7 @@ void port_4_init(void) {       // Функція ініціалізації 4-г
   pinMode(RGB_RED, OUTPUT);    // Налаштування піна червоного кольору RGB (Configuration of the Red Color Pin for RGB)
   pinMode(RGB_GREEN, OUTPUT);  // Налаштування піна зеленого кольору RGB (Configuration of the Green Color Pin for RGB)
   pinMode(RGB_BLUE, OUTPUT);   // Налаштування піна синього кольору RGB (Configuration of the Blue Color Pin for RGB)
-  rgb4_set(0, 0, 0);
+  rgb4_set(GREEN);
 }
 
 void port_5_init(void) {      // Функція ініціалізації 5-го порта (Initialization Function for Port 5)
@@ -367,9 +368,9 @@ void window(void) {
   servo.write((window_flag) ? 90 : 0);
 }
 
-void traffic_light(uint8_t mode) {
+void traffic_light(uint8_t color) {
 #if defined(separate_leds3)
-  switch (mode) {
+  switch (color) {
     case RED:
       digitalWrite(TL_RED, 1);
       digitalWrite(TL_YELLOW, 0);
@@ -407,10 +408,50 @@ void traffic_light(uint8_t mode) {
 #endif
 }
 
-void rgb4_set(bool r_led, bool g_led, bool b_led) {
-  digitalWrite(RGB_RED, r_led);
-  digitalWrite(RGB_GREEN, g_led);
-  digitalWrite(RGB_BLUE, b_led);
+void rgb4_set(uint8_t color)
+{
+  switch (color) {
+    case OFF:
+      digitalWrite(RGB_RED, 0);
+      digitalWrite(RGB_GREEN, 0);
+      digitalWrite(RGB_BLUE, 0);
+      break;
+    case RED:
+      digitalWrite(RGB_RED, 1);
+      digitalWrite(RGB_GREEN, 0);
+      digitalWrite(RGB_BLUE, 0);
+      break;
+    case GREEN:
+      digitalWrite(RGB_RED, 0);
+      digitalWrite(RGB_GREEN, 1);
+      digitalWrite(RGB_BLUE, 0);
+      break;
+    case BLUE:
+      digitalWrite(RGB_RED, 0);
+      digitalWrite(RGB_GREEN, 0);
+      digitalWrite(RGB_BLUE, 1);
+      break;
+    case YELLOW:
+      analogWrite(RGB_RED, 255);
+      analogWrite(RGB_GREEN, 255);
+      analogWrite(RGB_BLUE, 0);
+      break;
+    case CYAN:
+      analogWrite(RGB_RED, 0);
+      analogWrite(RGB_GREEN, 255);
+      analogWrite(RGB_BLUE, 255);
+      break;
+    case PURPLE:
+      analogWrite(RGB_RED, 255);
+      analogWrite(RGB_GREEN, 0);
+      analogWrite(RGB_BLUE, 255);
+      break;
+    case WHITE:
+      digitalWrite(RGB_RED, 1);
+      digitalWrite(RGB_GREEN, 1);
+      digitalWrite(RGB_BLUE, 1);
+      break;
+  }
 }
 
 void step_forward(void) {

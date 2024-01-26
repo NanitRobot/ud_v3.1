@@ -34,6 +34,15 @@
 #define YELLOW 2 // Макрос жовтого кольору для функції світлофора (Macro for the Yellow Color in the Traffic Light Function)
 #define GREEN 3  // Макрос зеленого кольору для функції світлофора (Macro for the Green Color in the Traffic Light Function)
 
+#define OFF 0
+#define RED 1    // Макрос червоного кольору для RGB світлодіода з 4 порта (Macro for Red Color of the RGB LED on Port 4)
+#define GREEN 2  // Макрос зеленого кольору для RGB світлодіода з 4 порта (Macro for Green Color of the RGB LED on Port 4)
+#define BLUE 3   // Макрос синього кольору для RGB світлодіода з 4 порта (Macro for Blue Color of the RGB LED on Port 4)
+#define YELLOW 4 // Макрос жовтого кольору для RGB світлодіода з 4 порта (Macro for Yellow Color of the RGB LED on Port 4)
+#define CYAN 5   // Макрос голубого кольору для RGB світлодіода з 4 порта (Macro for Cyan Color of the RGB LED on Port 4)
+#define PURPLE 6 // Макрос пурпурового кольору для RGB світлодіода з 4 порта (Macro for Purple Color of the RGB LED on Port 4)
+#define WHITE 7  // Макрос білого кольору для RGB світлодіода з 4 порта (Macro for White Color of the RGB LED on Port 4)
+
 #define RGB_RED   P4_2    // Пін червоного кольору RGB-світлодіода (Pin for the Red Color of the RGB LED)
 #define RGB_GREEN P4_3    // Пін зеленого кольору RGB-світлодіода (Pin for the Green Color of the RGB LED)
 #define RGB_BLUE  P4_4    // Пін синього кольору RGB-світлодіода (Pin for the Blue Color of the RGB LED)
@@ -83,9 +92,9 @@ void port_5_init(void);
 void port_6_init(void); 
 void port_9_init(void);
 
-void traffic_light(uint8_t mode);
+void traffic_light(uint8_t color);
 
-void rgb4_set(bool r_led,bool g_led, bool b_led);
+void rgb4_set(uint8_t color);
 
 void initdisplay(void);
 
