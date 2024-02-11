@@ -428,8 +428,8 @@ void AirQuality_Fan(void)
 { 
   // Коли показники якості повітря поза норми двигун вмикається
   // When Air Quality Readings are Out of Normal Range, the Motor Turns On
-  if (prev_gas > 200 || prev_tmp > 33 || prev_hum > 66) {digitalWrite(MOTOR1_A, 1);}
-  else {digitalWrite(MOTOR1_A, 0);}
+  if (prev_gas > 200 || prev_tmp > 33 || prev_hum > 66) {digitalWrite(MOTOR1_A, HIGH);}
+  else {digitalWrite(MOTOR1_A, LOW);}
   // Інакше, коли показники якості в рамках норми двигун вимкнений
   // Otherwise, When Air Quality Readings are Within Normal Range, the Motor is Turned Off
 }
@@ -526,13 +526,13 @@ void rgb4_set(uint8_t color){ // Функція вмикання кольорі�
       break;
     case PURPLE: // Пурпоровий колір RGB світлодіода (Purple Color of the RGB LED)
       digitalWrite(RGB_RED, HIGH);
-      digitalWrite(RGB_GREEN, 0);
+      digitalWrite(RGB_GREEN, LOW);
       digitalWrite(RGB_BLUE, HIGH);
       break;
     case WHITE: // Білий колір RGB світлодіода (WHITE Color of the RGB LED)
-      digitalWrite(RGB_RED, 1);
-      digitalWrite(RGB_GREEN, 1);
-      digitalWrite(RGB_BLUE, 1);
+      digitalWrite(RGB_RED, HIGH);
+      digitalWrite(RGB_GREEN, HIGH);
+      digitalWrite(RGB_BLUE, HIGH);
       break;
   }
 }
@@ -570,7 +570,7 @@ void step_backward(void) {
 }
 
 // Функція для блокування шлагбаума (Function for Barrier Gate Locking)
-void step_lock(void) {for (short k = 0; k < 4; k++) { digitalWrite(step_pin[k], 0); }}
+void step_lock(void) {for (short k = 0; k < 4; k++) { digitalWrite(step_pin[k], LOW); }}
 
 // Основна функція роботи шлагбаума в парі з датчиком відстані, світлофором та 7-сегментним екраном
 // Main Function for Barrier Gate Operation in Conjunction with Distance Sensor, Traffic Light, and 7-Segment Display
