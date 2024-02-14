@@ -710,8 +710,4 @@ void parkin_ctrl(void){
   }
   else{step_lock();}
 }
-
-// void send_data(void){
-//   String data = String(last_hum) + String(last_gas) + String(last_tmp);
-// }
 #endif
