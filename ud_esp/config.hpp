@@ -1,3 +1,5 @@
+// #include <cstdint>
+#include "WString.h"
 #include <NanitLib.h>
 #include <DHT.h>
 #include <TM1637Display.h>
@@ -117,6 +119,25 @@ void checkPassword(void);
 void resetPassword(void);
 
 bool locck(void);
-
 void lock_home(void);
 
+#if defined(ESP_CONTROL) || defined(BT_CONTROL)
+typedef struct{
+  int8_t type_ctrl = 0;
+  bool mode_ctrl = 0;
+  bool fan_ctrl = 0;
+  bool window_ctrl = 0;
+  bool light_ctrl = 0;
+  bool parkin_ctrl = 0;
+  String name_ctrl = "";
+} wireless_t;
+
+void init_connect_rc(void);
+bool wireless_ctrl(void);
+
+void fan_ctrl(void);
+void window_ctrl(void);
+void light_ctrl(void);
+void parkin_ctrl(void);
+void send_data(void);
+#endif
