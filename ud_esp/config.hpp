@@ -120,3 +120,5 @@ bool locck(void);
 
 void lock_home(void);
 
+void  getControl(HardwareSerial& sender);
+

@@ -3,7 +3,7 @@
 
 void setup() // Стартова функція скетчу (Starting Function of the Sketch)
 {
-  // Serial.begin(9600);
+  Serial3.begin(57600);
   initdisplay(); // Функція ініціалізація дисплею Nanit (Function for Nanit Display Initialization)
   port_1_init(); // Функція ініціалізації 1-го порту (Function for Initializing Port 1)
   port_2_init(); // Функція ініціалізації 2-го порту (Function for Initializing Port 2)
@@ -16,6 +16,7 @@ void setup() // Стартова функція скетчу (Starting Function 
 
 void loop() // Основний цикл роботи алгоритму розумного будинку (Main Loop of the Smart Home Algorithm)
 {
+  getControl(Serial3);
   keypad(); // Основна функція роботи клавіатури (Main Function for Keyboard Operation)
   if(locck()) // Розгалуження режимів роботи будинку (Branching for Smart Home Operation Modes)
   { // Блок режиму роботи, блокування зняте (Operation Mode Block, Locking Removed)

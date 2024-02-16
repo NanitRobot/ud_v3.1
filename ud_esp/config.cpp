@@ -8,14 +8,21 @@ TM1637Display tm(CLK, DIO);
 
 // Масив пінів крокового двигуна для зручності у програмуванні
 // Array of Pins for the Stepper Motor for Programming Convenience
-const byte step_pin[4]{ IN1, IN2, IN3, IN4 }; 
+const byte step_pin[4]{IN1, IN2, IN3, IN4};
 
-bool
-  parkin_flag = 0,
-  light = 0,
-  lock_flag = 1,
-  window_flag = 0,
-  prev_window = 0;
+bool                        //
+    manual_control = false, /**< Ознака що ми керуємо в ручному режимі
+                                A sign that we are driving in manual mode */
+
+    fan_manual_on = false, /**< Вентилятор увімкнено мануально
+                                The fan is turned on manually */
+    window_manual_open = false, /**< Вікно відриємо по вланому бажанню
+                                     We open the window as desired */
+    parkin_flag = false, 
+    light = false,
+    lock_flag = true,
+    window_flag = false,
+    prev_window = false;
 
 int
   prev_gas = 0,
@@ -354,6 +361,108 @@ void initdisplay(void) {
   delay(2000);
   tft.fillScreen(background_screen);
 }
+/**
+ * @brief Send sensors values to serial port
+ * @param sender Serial stream
+ */
+void sentSensors(HardwareSerial &sender) {
+  /* Опорне значення для АЦП 5 вольт передавати ми будемо у мілівольтах 5000
+   * (примаючий скрипт приймає тільки цілі значення).
+   *
+   * АЦП який ви використовуємо 10 бітний. Для визначення максимального значення
+   * яке може видати перетворювач використаємо операцію побітого зсуву 1 на 10
+   * розрядів у гору і віднімемо 1 в результаті отримаємо максимальне значення
+   * яке може видати перетворювач (1023)
+   *
+   * Ключове слово constexpr вимагає щоб компілятор спробував обчислити
+   * значення, щоб мікроконтролер не займався обчисленням числа
+   */
+  /* We will transmit the reference value for the ADC of 5 volts in 5000
+   * millivolts (the receiving script accepts only integer values).
+   *
+   * The ADC that you use is 10 bit. To determine the maximum value
+   * which can be issued by the converter, we will use the broken shift
+   * operation 1 by 10 digits uphill and subtract 1, resulting in the maximum
+   * value which can be issued by the converter (1023)
+   *
+   * The constexpr keyword requires the compiler to attempt to calculate
+   * value so that the microcontroller does not calculate the number
+   */
+  constexpr int mVperBit =
+      5000 / ((1 << 10) - 1); /** < роздільна здатність аналогово- цифрового
+                               перетворювача у мілівольтах. Після обчислення
+                               компілятором значення константи буде 4
+
+                               analog-digital resolution
+                               converter in millivolts. After calculation
+                               the compiler value of the constant will be 4*/
+
+  /** Послідовно передаємо значення */
+  /** We pass values sequentially */
+  sender.print((int)prev_tmp); /**< Надсилаємо температуру 
+                                    We send the temperature */
+  /** Розділяючи їх комою з пробілом
+      Separating them with a comma and a space
+  */
+  const char _sep_[] = ", ";
+  sender.print(_sep_);
+  sender.print((int)prev_hum); /**< Надсилаємо вологість
+                                    We send humidity */
+  sender.print(_sep_);
+  sender.print((int)prev_gas); /** < Надсилаємо рівень газу
+                                     We send the gas level */
+  sender.print(_sep_);
+  sender.print((int)NanitRobot::Nanit::getNanit()
+                   .getBatteryPower()); /**< Надсилаємо рівень зяряду
+                                             We send the charge level */
+  sender.print(_sep_);
+  sender.print((int)(analogRead(BATTERY_PIN) *
+                     mVperBit)); /**< Надсилаємо напругу на батареї
+                                      We send voltage to the battery*/
+  sender.println();
+}
+
+void getControl(HardwareSerial &sender) {
+  /**  @brief Перелік параметрів які передаються в порт  */
+  enum {
+    MAN_CTRL = 0,    //
+    FAN_MAN_CTRL,    //
+    WINDOW_MAN_CTRL, //
+    RESERVED,        //
+    GATE_MAN_CTRL,   //
+    LAST_VALUE //
+  };
+
+  /**
+   * Якщо в порт щось прилітає починаємо аналузвати
+   *
+   */
+  if (0 != sender.available()) {
+    String input_string = Serial3.readStringUntil(
+        '\n'); /** < Читаємо до символу завершення рядка */
+    char *str = strdup(input_string.c_str());
+    char *token = strtok(str, ","); /** < виділяємо перший елемент що
+                                    закінчується комою або до кінця рядка */
+    byte index = 0; /** < лічильник елементів */
+    int values[LAST_VALUE]; /** < оргінзуємо масив для зберігання чисел */
+    while ((NULL != token) &&
+           (index < LAST_VALUE)) /**  < Повторюватимемо дії поки не закінчиться
+                                    рядок або місце у масиві */
+    {
+      values[index++] = atoi(
+          token); /** < шукаємо числа у рядку, якщо знаходимо занписуємо у першу
+                     комірку і одразу перводимо вказівник на наступну комірку */
+      token = strtok(NULL, ","); /** < шукаємо цифри у до наступної коми */
+    }
+    /** Якщо ми щось записали в масив присвоюємо ці значення змінним для подальшого*/
+    manual_control = values[MAN_CTRL];
+    fan_manual_on = values[FAN_MAN_CTRL];
+    window_manual_open = values[WINDOW_MAN_CTRL];
+  }
+  // manual_control
+  // fan_manual_on
+  // window_manual_open
+}
 
 void displaySensors(void) 
 { // Функція виведення інформації з датчиків (Function for Displaying Sensor Information)
@@ -420,32 +529,68 @@ void displaySensors(void)
     tft.setTextColor(~background_screen);
     tft.fillScreen(background_screen);
   }
+
+  sentSensors(Serial3); /**< відправляємо дані
+                             we send data */
 }
 
 // Функція для двигуна ПС, який виступає в якості системи вентиляції
 // Function for a DC Motor Acting as a Ventilation System
-void AirQuality_Fan(void) 
-{ 
-  // Коли показники якості повітря поза норми двигун вмикається
-  // When Air Quality Readings are Out of Normal Range, the Motor Turns On
-  if (prev_gas > 200 || prev_tmp > 33 || prev_hum > 66) {digitalWrite(MOTOR1_A, HIGH);}
-  else {digitalWrite(MOTOR1_A, LOW);}
-  // Інакше, коли показники якості в рамках норми двигун вимкнений
-  // Otherwise, When Air Quality Readings are Within Normal Range, the Motor is Turned Off
+void AirQuality_Fan(void) {
+  bool fan_is_on; /**< Вентилятор увімкнений
+                       The fan is on */
+  if (manual_control) 
+  /* Якщо ручне керування то 
+     If manual control then */
+  {
+    fan_is_on = fan_manual_on;
+  } else
+  /* Якщо працює автоматика
+     If the automation works */ 
+  {
+    // Коли показники якості повітря поза норми двигун вмикається
+    // When Air Quality Readings are Out of Normal Range, the Motor Turns On
+    if (prev_gas > 200 || prev_tmp > 33 || prev_hum > 66)
+      fan_is_on = true;
+    else
+      // Інакше, коли показники якості в рамках норми двигун вимкнений
+      // Otherwise, When Air Quality Readings are Within Normal Range, the
+      // Motor is Turned Off
+      fan_is_on = false;
+  }
+  /*
+    Посилаємо визначений сигнал на пін
+    We send the specified signal to the pin
+  */
+  digitalWrite(MOTOR1_A, fan_is_on);
 }
 
 // Функція для серво, який використовуються для механізму шторки вікна
 // Function for Servo Used in Window Curtain Mechanism
-void window(void) 
-{
-  // Якщо датчик світла подає сигнал "світло", то вікно відкрите
-  // If the Light Sensor Signals 'Light', Then the Window is Opened
-  if (!digitalRead(LIGHT_PIN)){ window_flag = 1; }
-  // Якщо датчик лінії бачить перед собою об'єкт, то вікно закривається
-  // If the Line Sensor Detects an Object in Front, Then the Window is Closed
-  if (!digitalRead(LINE_PIN)) { window_flag = 0; }
-  // Положення сервомотора відносно отриманної інформації з датчиків світла та лінії
-  // Position of the Servo Motor Relative to the Information Received from Light and Line Sensors
+void window(void) {
+  if (manual_control) {
+  /* Якщо ручне керування то 
+     If manual control then */
+    window_flag = window_manual_open;
+  } 
+  /* Якщо працює автоматика
+    If the automation works */ 
+  else {
+    // Якщо датчик світла подає сигнал "світло", то вікно відкрите
+    // If the Light Sensor Signals 'Light', Then the Window is Opened
+    if (!digitalRead(LIGHT_PIN)) {
+      window_flag = true;
+    }
+
+    // Якщо датчик лінії бачить перед собою об'єкт, то вікно закривається
+    // If the Line Sensor Detects an Object in Front, Then the Window is Closed
+    if (!digitalRead(LINE_PIN)) {
+      window_flag = false;
+    }
+  }
+  // Положення сервомотора відносно отриманної інформації з датчиків світла та
+  // лінії Position of the Servo Motor Relative to the Information Received from
+  // Light and Line Sensors
   servo.write((window_flag) ? 90 : 0);
 }
 
@@ -572,15 +717,17 @@ void step_backward(void) {
 // Функція для блокування шлагбаума (Function for Barrier Gate Locking)
 void step_lock(void) {for (short k = 0; k < 4; k++) { digitalWrite(step_pin[k], LOW); }}
 
+///!todo Не закінчене керування вототами
+
 // Основна функція роботи шлагбаума в парі з датчиком відстані, світлофором та 7-сегментним екраном
 // Main Function for Barrier Gate Operation in Conjunction with Distance Sensor, Traffic Light, and 7-Segment Display
 void parkin(void) {
-  digitalWrite(TRIG_PIN, 1);
+  digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, 0);
+  digitalWrite(TRIG_PIN, LOW);
   int cm = pulseIn(ECHO_PIN, 1) / 58;
 
-  if (cm < 5 && parkin_flag == 0) {
+  if (cm < 5 && parkin_flag == false) {
     tm.clear();
     tm.setSegments(word_wait);
     traffic_light(YELLOW);
@@ -588,8 +735,8 @@ void parkin(void) {
     tm.clear();
     tm.setSegments(word_open);
     traffic_light(GREEN);
-    parkin_flag = 1;
-  } else if (cm > 5 && parkin_flag == 1) {
+    parkin_flag = true;
+  } else if (cm > 5 && parkin_flag == true) {
     tm.clear();
     tm.setSegments(word_wait);
     traffic_light(YELLOW);
@@ -597,7 +744,7 @@ void parkin(void) {
     traffic_light(RED);
     tm.clear();
     tm.setSegments(word_stop);
-    parkin_flag = 0;
+    parkin_flag = false;
   }
 }
 // Функція режиму блокування будинку (Function for Home Locking Mode)
