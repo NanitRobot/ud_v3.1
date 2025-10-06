@@ -1,130 +1,164 @@
-<center> 
+[Read me in Ukrainian](README_uk.md)
 
-# Nanit Smart Home 
+<center>
+
+# Nanit Smart Home
 
 </center>
 
 ![Real Photo](/images/ud_v3.1.png)
 
-Вітаємо. Даний репозиторій представляє собою загальну інформацію про збирання схеми. Оскільки вся інформація по усім модулям знаходиться на самому курсі а також як зібрати готовий екземпляр як на фото. Тут буде лише покрокова інформація про збирання схеми. 
+Welcome!  
+This repository provides general information about assembling the circuit.  
+Since all detailed information about each module and the complete assembly (as shown in the photo) is provided in the course itself, this document contains only a **step-by-step guide** for assembling the circuit.
 
-## Загальна схема розумного будинку
+---
+
+## 🏠 General Smart Home Circuit
 
 ![Real Photo](/images/UD_StandAlone_Full.png)
 
-Дана схема - кінцевий результат збирання макету будинку. Але бажано покроково збирати схему. Цим і займемось.
+This diagram represents the **final assembled version** of the house model.  
+However, it’s recommended to build the circuit step by step — which is exactly what we’ll do here.
 
-Але для початку треба внести ясність до схеми. Колір дроту який з'єднує пін безпосередньо не важливо, та обрано було можна сказати "на власний розсуд". Але якщо це світлодіод або двигун, то йде сувора послідовність. Тому уважно звертайте увагу на з'єднання подібних компонентів. А також піни живлення: 
-- <span style="color: red;">Червоний дріт</span> -> `+5V/VCC`
-- **Чорний дріт** ->  &mdash; або `GND`
+Before starting, let’s clarify a few things:  
+The color of the connecting wires is not important unless specified — it was chosen mostly for clarity.  
+However, for **LEDs** or **motors**, the wiring order **must** be followed strictly.  
+Also, remember the standard power pin colors:
 
-## Порт 1: Двигуни
+- 🔴 **Red wire** → `+5V / VCC`  
+- ⚫ **Black wire** → `—` or `GND`
+
+---
+
+## ⚙️ Port 1: Motors
 
 ![Port 1](/images/UD_StandAlone_Port1.png)
 
-На перший порт має бути підключені <u>**Двигун ПС**</u> для вентиляції та <u>**Сервомотор**</u> для шторки вікна. В даному проекті полярність двигуна буде незначна.
+Port 1 should be connected to a **DC motor** for ventilation and a **servo motor** for the window curtain.  
+In this project, the DC motor polarity is not critical.
 
-| Пін компонента | Макрос піна в коді |
-| ----------- | ----------- |
+| Component Pin | Code Macro |
+| -------------- | ----------- |
 | `Servo: Signal` | `P1_1` |
-| `DC Motor A` | `P1_4 / MOTOR1_A` | 
-| `DC Motor B` | `P1_3 / MOTOR1_A` | 
+| `DC Motor A` | `P1_4 / MOTOR1_A` |
+| `DC Motor B` | `P1_3 / MOTOR1_B` |
 
-## Порт 2: Кроковий двигун
+---
+
+## ⚙️ Port 2: Stepper Motor
 
 ![Port 2](/images/UD_StandAlone_Port2.png)
 
-Цей порт буде зайнятий цілком **Кроковим двигуном**, який буде підключений через драйвер. Все дуже просто:
+This entire port is dedicated to the **stepper motor**, which connects via a driver.  
+Simple and straightforward:
 
-| Пін драйвера | Макрос піна в NanitLib |
-| ----------- | ----------- | 
+| Driver Pin | NanitLib Macro |
+| ----------- | -------------- |
 | `IN1` | `P2_1` |
-| `IN2` | `P2_2` | 
+| `IN2` | `P2_2` |
 | `IN3` | `P2_3` |
 | `IN4` | `P2_4` |
 
-## Порт 3: Світлофор
+---
+
+## 🚦 Port 3: Traffic Light
 
 ![Port 3](/images/UD_StandAlone_Port3.png)
 
-На даному порті буде світлофор зроблений з 3-х `світлодіодів`. Бажано перед цим спаяти світлодіоди з <u>резисторами</u> номіналом `220Ом` та дроти. Як було зазначено раніше, колір дрота йде відповідно до кольору світлодіода. Для зручності ось таблиця пінів
+This port is used for the **traffic light**, made from 3 LEDs.  
+It’s recommended to **solder the LEDs** together with **220Ω resistors** and wires beforehand.  
+As mentioned earlier, wire color should match the LED color.  
+For convenience:
 
-| Колір світлодіда | Макрос піна в NanitLib |
-| ----------- | ----------- | 
-| <font color="red">Red LED</font> | `P3_2` |
-| <font color="yellow">Yellow LED</font> | `P3_3` |
-| <font color="green">Green LED</font> | `P3_4` |
+| LED Color | NanitLib Macro |
+| ---------- | -------------- |
+| 🔴 Red LED | `P3_2` |
+| 🟡 Yellow LED | `P3_3` |
+| 🟢 Green LED | `P3_4` |
 
-## Порт 4: Світлофор
+---
+
+## 🌈 Port 4: RGB Module
 
 ![Port 4](/images/UD_StandAlone_Port4.png)
 
-На відміну від `Світлофора` не потрібно нічого паяти, бо вже все було спаяно на модулі виробником. Однак тут хочу застережити що на даній схемі потрібно звертати увагу на примітки модуля як на схемі так і вживу. Але код написано саме таким чином як вказано нижче:
+Unlike the traffic light, no soldering is required here — everything is already preassembled on the module.  
+However, pay attention to the module pin markings both on the schematic and on the physical board.  
+The code is written assuming the following pin mapping:
 
-| Колір RGB | Макрос піна в NanitLib |
-| ----------- | ----------- | 
-| <font color="red">Red LED</font> | `P4_2` |
-| <font color="green">Green LED</font> | `P4_3` |
-| <font color="blue">Blue LED</font> | `P4_4` |
+| RGB Color | NanitLib Macro |
+| ---------- | -------------- |
+| 🔴 Red LED | `P4_2` |
+| 🟢 Green LED | `P4_3` |
+| 🔵 Blue LED | `P4_4` |
 
-На малюнку схеми розпіновка йде в такому порядку `B`(синій колір), `G`(зелений колір), `R`(червоний колір) та `-`(маса/мінус). Найчастіше все йде в порядку `R` `G` `B` `-`. Звертайте увагу на маркування ніжок.
+In the schematic, the pin order is `B` (blue), `G` (green), `R` (red), and `-` (ground).  
+Usually, the order is `R`, `G`, `B`, `-`. Always check the pin labels carefully.
 
-## Порт 5: PIR, Датчики звуку та лінії, Buzzer
+---
+
+## 🎯 Port 5: PIR, Sound & Line Sensors, Buzzer
 
 ![Port 5](/images/UD_StandAlone_Port5.png)
 
-Далі йдуть датчики `sensors` разом з базером. Але перед цим рекомендую відрегулювати чутливість компараторів для датчиків звуку та лінії. Бо в першому випадку при звуковій сигналізації датчик може на це зреагувати і сигналізація буде циклічна. у другому випадку датчик лінії не зможе закрити шторку вікна.
+This port connects multiple **sensors** along with the **buzzer**.  
+Before using them, adjust the sensitivity of the **sound** and **line** sensor comparators.  
+Otherwise, the sound sensor may repeatedly trigger the alarm, or the line sensor may fail to close the curtain properly.
 
-Таблиця пінів на порті:
-
-| Піни модулів | Макрос піна в NanitLib |
-| ----------- | ----------- | 
+| Module Pin | NanitLib Macro |
+| ----------- | -------------- |
 | `PIR Motion` | `P5_1` |
-| `Sound sensor` | `P5_2` |
+| `Sound Sensor` | `P5_2` |
 | `Buzzer` | `P5_3` |
-| `Line sensor` | `P5_4` |
+| `Line Sensor` | `P5_4` |
 
-Тут показано в скороченому форматі підключення живлення модулів. У реальності можна спокійно на кожен модуль виводити лінії живлення. Пінів вистачить.
+Power connections are shown in a simplified format here.  
+In practice, you can provide separate power lines for each module — there are enough pins for that.
 
-## Порт 6: DHT11, GAS MQ7 and LDR sensors
+---
+
+## 🌡️ Port 6: DHT11, Gas MQ7, and LDR Sensors
 
 ![Port 6](/images/UD_StandAlone_Port6.png)
 
-На відміну від порта 5 тут калібрування датчиків необов'язкове. Але важливо що датчики аналогові, але не з усіх потрібно читати саме аналогові сигнали. Наприклад, датчик світла може інформувати про рівень освітленості але в цьому проекті нам потрібно лише знати два стани: `темно` та `світло`.
+Unlike Port 5, sensor calibration here is **not required**.  
+Most of these sensors are **analog**, but not all need analog readings.  
+For example, the light sensor only needs to detect two states: **dark** or **bright**.
 
-Таблиця пінів на порті:
+| Module Pin | Digital/Analog | NanitLib Macro |
+| ----------- | -------------- | -------------- |
+| `DHT11 Sensor` | Digital | `P6_1` |
+| `Gas MQ7 Sensor` | Analog | `P6_2` |
+| `LDR Sensor` | Digital | `P6_3` |
 
-| Піни модулів | Digital or Analog | Макрос піна в NanitLib |
-| ----------- | ----------- | ----------- | 
-| `DHT 11 sensor` | Digital | `P6_1` |
-| `Gas-MQ7 sensor ` | Analog | `P6_2` |
-| `LDR sensor` | Digital | `P6_3` |
+---
 
-## Порт 9: UltraSonic HC-SR04 та 7-сегментний дисплей TM1637
+## 📏 Port 9: UltraSonic HC-SR04 and 7-Segment Display TM1637
 
-![Port 9](/images/UD_StandAlone_Port9.png) 
+![Port 9](/images/UD_StandAlone_Port9.png)
 
-Тут нічого складного не буде. Але важливо не переплутати піни для драйвера TM1637 інакше інформації на дисплеї не буде.
+This setup is simple, but make sure not to **swap the TM1637 driver pins**, otherwise nothing will display.
 
-Таблиця пінів на порті:
-
-| Піни модулів | Макрос піна в NanitLib |
-| ----------- | ----------- |  
+| Module Pin | NanitLib Macro |
+| ----------- | -------------- |
 | `TM1637 CLK` | `P9_1` |
 | `TM1637 DIO` | `P9_2` |
 | `UltraSonic Trig` | `P9_3` |
 | `UltraSonic Echo` | `P9_4` |
 
-## Порт 7 та 10: Клавіатура
+---
 
-![Port 9](/images/UD_StandAlone_Keypad.png)
+## ⌨️ Ports 7 and 10: Keypad
 
-Для клавіатури не потрібне живлення однак тут важливо в правильному порядку підключити піни портів. У випадку якщо піни будуть наплутані, то клавіши будуть невірно передані `Nanit`'у. Тому уважно підключайте клавіатуру.
+![Keypad](/images/UD_StandAlone_Keypad.png)
 
-Таблиця підключень клавіатури:
+The keypad does not require power, but the **pin order** is very important.  
+If the pins are connected incorrectly, the keys will send the wrong values to the Nanit board.  
+Connect carefully according to the table below:
 
-| № | Піни клавіатури | Макрос піна в NanitLib |
-| ----------- | ----------- | ----------- |  
+| № | Keypad Pin | NanitLib Macro |
+| - | ----------- | -------------- |
 | 1 | `R1` | `P7_4` |
 | 2 | `R2` | `P7_3` |
 | 3 | `R3` | `P7_2` |
@@ -136,6 +170,6 @@
 
 ---
 
-## Висновок
+## ✅ Conclusion
 
-Після збирання схеми можете спокійно прошити Nanit та протестувати весь функціонал розумного будинку.
+Once the wiring is complete, you can safely **flash the Nanit board** and **test all smart home functions**.
