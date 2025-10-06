@@ -1,4 +1,4 @@
-[Read me in Ukrainian](README_uk.md)
+[Читати мене Українською](README_uk.md)
 
 <center>
 
